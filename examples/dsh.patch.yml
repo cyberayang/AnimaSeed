@@ -1,0 +1,18 @@
+# 将本地包添加到选定的 dsh profile 依赖后，把此 insert 合并到该 profile 的 cordis.patch.yml。
+# 兼容基线：dsh 0.2.1-rc.2；Node.js >=24.14。
+- insert:
+    - id: soul-core
+      name: '@animaseed/core/dsh'
+      config:
+        # 改为你自己的绝对人生目录；示例路径不会自动替换。
+        dataDir: '/absolute/path/to/your/workspace/data/soul'
+        # 不设置时按问题在6000/12000字符预算间选择；需要时可固定至最高32000。
+        # maxContextChars: 12000
+        idleMs: 120000
+        memoryOnly: true
+        # 空闲整理默认复用最近根会话的模型；前台记忆准备没有额外网络请求。
+        reflect: true
+        maxReflectionCallsPerDay: 12
+        # reflect: false 可关闭所有额外模型整理。也可指定宿主已有的其他整理路由：
+        # reflectionProvider: '宿主provider名称'
+        # reflectionModel: '宿主model名称'

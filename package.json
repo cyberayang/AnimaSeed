@@ -1,0 +1,43 @@
+{
+  "name": "@animaseed/core",
+  "version": "0.2.0",
+  "description": "AnimaSeed: a portable core for lifelong memory, evolving personality and identity across conversations",
+  "repository": { "type": "git", "url": "https://github.com/cyberayang/AnimaSeed.git" },
+  "homepage": "https://github.com/cyberayang/AnimaSeed#readme",
+  "bugs": { "url": "https://github.com/cyberayang/AnimaSeed/issues" },
+  "keywords": ["animaseed", "memory", "identity", "personality", "agents", "local-first"],
+  "type": "module",
+  "private": true,
+  "license": "MIT",
+  "engines": { "node": ">=24.14.0", "dsh": "0.2.1-rc.2" },
+  "exports": { ".": { "types": "./dist/src/index.d.ts", "default": "./dist/src/index.js" }, "./dsh": "./adapters/dsh/plugin.mjs" },
+  "bin": { "animaseed": "./dist/cli/main.js", "memory-core": "./dist/cli/main.js", "soul-core": "./dist/cli/main.js" },
+  "files": ["dist", "adapters", "README.md", "README.en.md", "docs", "examples/dsh.patch.yml"],
+  "scripts": {
+    "build": "tsc -p tsconfig.build.json",
+    "prepack": "npm run build",
+    "check": "tsc --noEmit && npm run build && node scripts/check.mjs && node --test test/*.test.ts",
+    "test": "npm run build && node --test test/*.test.ts",
+    "demo": "node examples/continuity.ts",
+    "start": "node cli/main.ts start",
+    "core": "node cli/main.ts"
+  },
+  "peerDependencies": {
+    "@deepseek-ai/dsh-llm": "0.2.1-rc.2",
+    "@deepseek-ai/schemastery": "~3.18.5"
+  },
+  "peerDependenciesMeta": {
+    "@deepseek-ai/dsh-llm": { "optional": true },
+    "@deepseek-ai/schemastery": { "optional": true }
+  },
+  "devDependencies": {
+    "@types/node": "24.19.2",
+    "typescript": "7.0.2",
+    "@deepseek-ai/cordis": "4.0.5",
+    "@deepseek-ai/dsh-agent-loop-testkit": "0.2.1-rc.2",
+    "@deepseek-ai/dsh-agent-loop": "0.2.1-rc.2",
+    "@deepseek-ai/dsh-system-prompt": "0.2.1-rc.2",
+    "@deepseek-ai/dsh-llm": "0.2.1-rc.2",
+    "@deepseek-ai/schemastery": "3.18.5"
+  }
+}
