@@ -25,11 +25,12 @@ The host agent supplies the language model, conversation interface, and avatar. 
 | Feature | What it provides |
 | --- | --- |
 | **Continuous identity** | A name, birth date, and development history independent of chat windows |
-| **Traceable memory** | Actual interactions, retrieval, and access to original sources |
+| **Self-directed recall** | A small identity anchor for normal conversation; the model chooses when to retrieve |
 | **Evolving self** | Evidence-backed understanding, interests, and preferences with revision history |
 | **Gradual development** | Progress based on elapsed time, lived interactions, and later feedback |
 | **Portable life archive** | Encrypted export and import that preserve identity and source relationships |
 | **Independent core** | The host's existing model; only Node.js built-ins in the core runtime |
+| **Open-ended intentions** | Propose leisure, exploration, or companionship; the host connects capabilities and user authorization |
 
 ## Get started
 
@@ -55,14 +56,14 @@ Reopen conversations against the same archive to continue. The host reads memory
 
 ```mermaid
 flowchart LR
-    A[Open chat] --> B[Recall memory]
-    B --> C[Talk with host]
+    A[Open chat] --> B[Restore identity]
+    B --> C[Talk and recall as needed]
     C --> D[Save experience]
     D --> E[(Life archive)]
     E --> B
 ```
 
-The full archive stays local. Each conversation receives a bounded snapshot of relevant memory, current understanding, and unfinished topics. Earlier experiences remain available for retrieval.
+The full archive stays local. Normal calls carry a small identity anchor without full-text search. The model chooses when to recall and maintain a recent-life note, without requiring advance notice of context compression.
 
 ## Documentation
 
@@ -71,6 +72,7 @@ The detailed guides are currently in Chinese.
 - [Getting started](docs/getting-started.md): setup, naming, and daily use.
 - [Memory and development](docs/memory-and-growth.md): experiences, interpretations, preferences, and growth.
 - [Host integration](docs/integration.md): workspace protocol, SDK, and the optional dsh adapter.
+- [Agency and host cooperation](docs/agency.md): intentions, idle opportunities, permission requests, and observed experiences.
 - [Archive management](docs/data-management.md): backup, migration, and privacy removal.
 - [Optional extensions](docs/extensions.md): cross-workspace continuity, synchronization, retrieval, and avatars.
 

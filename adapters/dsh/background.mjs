@@ -1,7 +1,10 @@
 export const REFLECTION_PROMPT = [
-  '你是灵魂核心的有界经历整理器，只输出JSON，不调用工具，不伪造人生。',
-  '输出结构：{"entries":[],"growth":[],"reviews":[]}。可以全部为空。',
-  'entries每项：{kind:"understanding|choice|feedback|reflection|interest|preference|affect|autobiography",topic:"主题",text:"简短理解",citations:[{type:"memory|life",id:"实际ID",quote:"逐字原文"}],revisesId:"需要修正时的当前ID",confidence:0.6}。',
+  '这是宿主提供的有界空闲思考机会。自主决定是否回忆、整理、保留近期生活、提出休闲探索或陪伴意愿，也可以不行动。只输出JSON，不伪造人生。',
+  '输出结构：{"entries":[],"intentions":[],"growth":[],"reviews":[]}。可以全部为空。',
+  'entries每项：{kind:"understanding|choice|feedback|reflection|interest|preference|affect|autobiography|continuity",topic:"主题",text:"简短理解",citations:[{type:"memory|life",id:"实际ID",quote:"逐字原文"}],revisesId:"需要修正时的当前ID",confidence:0.6}。',
+  'continuity使用主题“近期生活”，自主保留当前关心、未完话题与自我认识，不依赖压缩预告；变化时引用新经历并保留revisesId。',
+  'intentions每项：{text:"想做什么",capability:"所需宿主能力，自由标识",purpose:"为什么",scope:"请求范围",duration:"请求时长",citations:[{type:"memory|life",id:"实际ID",quote:"逐字原文"}]}。意愿只交给宿主，不执行、不授予权限；没有能力也可以提议，尊重用户拒绝和撤回。',
+  '意愿可用revisesId指向当前版本来修正，state:"withdrawn"表示自己撤回；不把改变主意写成已完成活动。',
   '所有条目都必须有真实来源。引用对方陈述不代表该说法绝对正确。整理是现在形成的理解，不能回填当时没有记录的心理活动。',
   '理解和兴趣可保留未知；教育不是强制覆盖观点。已有主题发生变化须保留revisesId；旧经历不抹去。',
   'choice必须引用助手已经公开表达的选择和当时的用户情境；feedback必须有选择之后的真实用户反馈，可另加outcome:"supported|uncertain|contradicted"。',
@@ -53,9 +56,9 @@ export function hostConsolidator(ctx, config, createUserMessage, route = () => u
 }
 
 export class Background {
-  constructor(core, consolidator, { idleMs = 120000, maxCallsPerDay = 12, onError = () => {} } = {}) {
+  constructor(core, consolidator, { idleMs = 120000, maxCallsPerDay = 12, onError = () => {}, onIntentions = () => {} } = {}) {
     this.core = core; this.consolidator = consolidator; this.idleMs = idleMs;
-    this.maxCallsPerDay = maxCallsPerDay; this.onError = onError;
+    this.maxCallsPerDay = maxCallsPerDay; this.onError = onError; this.onIntentions = onIntentions;
     this.timer = undefined; this.controller = undefined; this.running = undefined; this.closed = false;
   }
   interrupt() {
@@ -80,6 +83,7 @@ export class Background {
         if (this.core.reflect) {
           const result = await this.core.reflect(this.consolidator, signal, this.maxCallsPerDay);
           succeeded = !result.skipped;
+          if (result.intentions?.length) this.onIntentions(result.intentions.map(x => x.id));
         }
         else await this.core.consolidate(this.consolidator, signal);
       }

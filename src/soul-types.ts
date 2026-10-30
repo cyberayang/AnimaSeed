@@ -1,9 +1,9 @@
 import type { Citation, Memory } from './types.ts';
 
 export const LIFE_KINDS = ['birth', 'adoption', 'interaction', 'understanding', 'choice', 'feedback',
-  'reflection', 'interest', 'preference', 'affect', 'autobiography', 'growth-sample', 'growth-review', 'stage'] as const;
+  'reflection', 'interest', 'preference', 'affect', 'autobiography', 'continuity', 'intention', 'permission', 'experience', 'growth-sample', 'growth-review', 'stage'] as const;
 export type LifeKind = typeof LIFE_KINDS[number];
-export type AuthoredKind = 'understanding' | 'choice' | 'feedback' | 'reflection' | 'interest' | 'preference' | 'affect' | 'autobiography';
+export type AuthoredKind = 'understanding' | 'choice' | 'feedback' | 'reflection' | 'interest' | 'preference' | 'affect' | 'autobiography' | 'continuity';
 export const DOMAINS = ['expression', 'memory', 'understanding', 'self', 'relationship', 'regulation'] as const;
 export type Domain = typeof DOMAINS[number];
 export const STAGES = ['newborn', 'exploring', 'childhood', 'adolescent', 'young-adult'] as const;
@@ -44,6 +44,16 @@ export interface LifeInput {
   outcome?: 'supported' | 'uncertain' | 'contradicted';
   interestState?: 'open' | 'resolved';
   affect?: { valence: number; arousal: number; trust: number };
+}
+export interface IntentionInput {
+  text: string;
+  capability: string;
+  purpose: string;
+  scope: string;
+  duration: string;
+  citations: SourceRef[];
+  revisesId?: string;
+  state?: 'open' | 'withdrawn';
 }
 export interface GrowthSampleInput {
   domain: Domain;
@@ -88,6 +98,7 @@ export interface SoulReflectionInput {
 }
 export interface SoulProposal {
   entries?: LifeInput[];
+  intentions?: IntentionInput[];
   growth?: GrowthSampleInput[];
   reviews?: GrowthReviewInput[];
 }

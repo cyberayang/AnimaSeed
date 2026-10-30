@@ -3,6 +3,8 @@ import { join, resolve } from 'node:path';
 import { SoulCore } from './soul-core.ts';
 import { SOUL_RULES } from './soul-context.ts';
 import type { SoulContextOptions } from './soul-context.ts';
+import { contextBudget } from './soul-context.ts';
+import type { IntentionInput } from './agency-types.ts';
 import type { LifeInput } from './soul-types.ts';
 import { namingPhrase } from './soul-lifecycle.ts';
 import { WORKSPACE_MARKER, workspaceGuide } from './workspace-guide.ts';
@@ -45,7 +47,7 @@ export class SoulWorkspace {
   receive(input: WorkspaceMessage, options: SoulContextOptions = {}) {
     const value = message(input), name = namingPhrase(value.text);
     // Validate the requested context budget before committing a new experience.
-    this.soul.context(value.text, options);
+    contextBudget(value.text, options);
     const lifecycle = this.soul.lifecycle();
     if (lifecycle.phase === 'awaiting-name') {
       if (!name) return { ...this.open(value.text, options), status: 'needs-name', sourceId: null };
@@ -60,6 +62,9 @@ export class SoulWorkspace {
     return this.soul.reply({ ...value, inReplyTo });
   }
   record(input: LifeInput) { return this.soul.record(input); }
+  intend(input: IntentionInput) { return { intention: this.soul.intend(input), handoff: 'host', permissionGranted: false }; }
+  intentions() { return this.soul.intentions(); }
+  idle() { return this.soul.idle(); }
   recall(query: string) { return this.soul.recall(query); }
   read(type: string, id: string) {
     if (type !== 'memory' && type !== 'life') throw new Error('type需要memory或life');

@@ -54,6 +54,14 @@ test('生产压缩包可独立安装：只发布JS，SDK和命令行迁移均可
   assert.equal(reopened.soulId, named.soulId); assert.equal(reopened.namingRequired, false);
   assert(reopened.context.text.includes(interest.text));
   assert.equal(cli(['workspace-read', '--workspace', workspace, '--type', 'memory', '--id', reply.id]).text, reply.text);
+  talk('workspace-record', { kind: 'continuity', topic: '近期生活', text: '下次继续聊星星，现在想安静探索。',
+    citations: [{ type: 'memory', id: received.sourceId, quote: '下次一起聊星星。' }] });
+  const intended = talk('workspace-intend', { text: '想看看星空图片', capability: 'host.images', purpose: '继续认识星星',
+    scope: '公开星空图片', duration: '一次', citations: [{ type: 'memory', id: received.sourceId, quote: '下次一起聊星星。' }] });
+  assert.equal(intended.handoff, 'host'); assert.equal(intended.permissionGranted, false);
+  assert.equal(cli(['workspace-intentions', '--workspace', workspace])[0].authorization, 'needed');
+  assert.equal(cli(['workspace-idle', '--workspace', workspace]).kind, 'idle-opportunity');
+  assert(cli(['workspace-open', '--workspace', workspace]).context.text.includes('下次继续聊星星，现在想安静探索。'));
   const start = () => execFileSync(process.execPath, [bin, 'start', '--workspace', workspace], {
     cwd: temporary, encoding: 'utf8', windowsHide: true, timeout: 10000, stdio: ['pipe', 'pipe', 'pipe'],
   });

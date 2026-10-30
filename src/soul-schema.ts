@@ -9,6 +9,7 @@ export function createSoulSchema(store: Store, now: string): void {
         at TEXT NOT NULL, status TEXT NOT NULL, data TEXT NOT NULL);
       CREATE INDEX IF NOT EXISTS soul_life_kind ON soul_life(kind,status,at);
       CREATE INDEX IF NOT EXISTS soul_life_revision ON soul_life(json_extract(data,'$.revisesId')) WHERE status='active';
+      CREATE INDEX IF NOT EXISTS soul_host_request ON soul_life(kind,json_extract(data,'$.details.requestId'),at) WHERE status='active';
       CREATE TABLE IF NOT EXISTS soul_links(child TEXT NOT NULL REFERENCES soul_life(id),
         source_type TEXT NOT NULL, source_id TEXT NOT NULL, PRIMARY KEY(child,source_type,source_id));
       CREATE INDEX IF NOT EXISTS soul_links_source ON soul_links(source_type,source_id);
@@ -27,6 +28,7 @@ export function createSoulSchema(store: Store, now: string): void {
       store.setMeta('soul.lifecycle', lifecycle);
       store.setMeta('soul.revision', 0);
     }
-    if (store.meta<Lifecycle>('soul.lifecycle')!.phase !== 'legacy') store.db.exec('PRAGMA user_version=2');
+    if (!store.meta('soul.host-epoch')) store.setMeta('soul.host-epoch', randomUUID());
+    if (store.meta<Lifecycle>('soul.lifecycle')!.phase !== 'legacy') store.db.exec('PRAGMA user_version=3');
   });
 }

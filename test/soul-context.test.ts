@@ -25,7 +25,9 @@ test('千段人生中保持固定身份、持续问题与按需上下文预算�
 test('普通问候不生成成年经历，复杂回忆按需扩大预算但不丢弃原件', t => {
   const f = soulFixture(t);
   const source = f.say('真实长篇记录：' + '今天讨论温柔和安静的区别。'.repeat(600));
-  const packet = f.soul.context('回忆以前讨论过什么');
+  const anchor = f.soul.context('回忆以前讨论过什么');
+  assert(anchor.chars <= 3000); assert(!anchor.text.includes('真实长篇记录'));
+  const packet = f.soul.context('回忆以前讨论过什么', { mode: 'recall' });
   assert(packet.chars <= 12000); assert(packet.truncated || packet.text.includes('展开原件'));
   assert.equal(f.soul.memory(source.id)?.text, source.text);
   assert.equal(f.soul.state().development.stage, 'newborn');

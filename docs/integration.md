@@ -6,7 +6,7 @@ AnimaSeed 管理身份与人生档案。宿主负责模型、会话、公开回�
 
 ## 接入流程
 
-每次新对话或上下文压缩后，重新读取当前记忆；用户原话提交后保存输入，完整回复实际展示后保存回复。值得延续的新认识由宿主模型提出，并附上真实来源。
+每次模型调用都保留固定核心原则和简短身份入口，不依赖压缩事件通知。普通交流不做全文检索；用户原话与公开回复可靠落盘，回忆、近期生活和新认识由模型自主决定。
 
 | 时机 | 工作区命令 | SDK 方法 |
 | --- | --- | --- |
@@ -16,6 +16,9 @@ AnimaSeed 管理身份与人生档案。宿主负责模型、会话、公开回�
 | 回忆与原文查看 | `workspace-recall`、`workspace-read` | `workspace.recall()`、`workspace.read()` |
 | 完整回复实际公开 | `workspace-reply` | `workspace.reply()` |
 | 保存有来源的认识 | `workspace-record` | `workspace.record()` |
+| 提出自由意愿 | `workspace-intend` | `workspace.intend()` |
+| 查看意愿与回执 | `workspace-intentions` | `workspace.intentions()` |
+| 宿主提供空闲机会 | `workspace-idle` | `workspace.idle()` |
 
 只连接工具接口，并不能保证每次对话自动完成这些步骤。宿主需要接入对应事件，或遵守生成的工作区指南。
 
@@ -28,6 +31,8 @@ node dist/cli/main.js workspace-open --text "继续上次的话题"
 ```
 
 返回的 `rules` 与 `context.text` 用于准备本轮模型上下文。宿主应替换上一份快照，避免重复累加。
+
+默认是最多 3,000 字符的身份锚点，不随输入关键词自动检索。模型需要时调用 `workspace-recall`；显式 `--mode recall` 才返回包含历史检索的快照，默认预算 12,000 字符。
 
 操作其他目录时追加 `--workspace <目录>`；该工作区需已初始化。正文通过 UTF-8 JSON 文件传入，也支持 `--file -` 从标准输入读取。
 
@@ -91,6 +96,8 @@ node dist/cli/main.js workspace-record --file entry.json
 
 引文必须真实存在。认识变化用 `revisesId` 指向原记录，保留先前理解。没有新认识时，保存原话即可，不必为每句话制造成长记录。
 
+模型自行选择时机保存接续状态：使用 `kind: "continuity"`、`topic: "近期生活"`，其余字段与引用规则相同。这样无需预知压缩时刻，也能在新窗口恢复当前关注。
+
 ### 检索与展开
 
 ```sh
@@ -133,7 +140,7 @@ try {
 dsh plugin --profile <profile名称> add <压缩包的绝对路径>
 ```
 
-插件入口为 `@animaseed/core/dsh`。普通对话提供四个接口：
+插件入口为 `@animaseed/core/dsh`。普通对话提供五个接口：
 
 | 工具 | 用途 |
 | --- | --- |
@@ -141,8 +148,9 @@ dsh plugin --profile <profile名称> add <压缩包的绝对路径>
 | `soul_recall` | 查找相关经历 |
 | `soul_read` | 展开原件或人生条目 |
 | `soul_record` | 保存有来源的理解、兴趣、选择或成长候选 |
+| `soul_intend` | 提出休闲、探索或陪伴意愿，交给宿主处理 |
 
-`memoryOnly: true` 将根会话工具限制为这四个接口；附加到工作智能体时可设为 `false`。子智能体不接收根身份的私人档案。
+`memoryOnly: true` 将根会话工具限制为这五个接口；附加到工作智能体时可设为 `false`。子智能体不接收根身份的私人档案。
 
 ### 空闲整理与费用
 
@@ -158,3 +166,5 @@ dsh 适配默认复用宿主模型整理待处理经历，可能产生模型费�
 单次整理限制为 45 秒、最多 24 条原件预览和 3,000 输出 token；同目录共享租约和预算。仅准备本地记忆快照不会调用模型。
 
 界面、语音和桌宠接入由宿主实现，见[可选扩展](extensions.md)。
+
+宿主权限、实际经历回执与空闲意愿通知，见[自主生活与宿主协作](agency.md)。

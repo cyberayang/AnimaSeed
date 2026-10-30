@@ -21,13 +21,17 @@ const visibleText = message => (message?.content ?? []).filter(x => x.type === '
 export function apply(ctx, config) {
   if (!isAbsolute(config.dataDir)) throw new Error('dataDir必须是独立的绝对路径');
   if (!!config.reflectionProvider !== !!config.reflectionModel) throw new Error('整理模型需同时指定provider和model');
-  const core = new SoulCore({ dataDir: config.dataDir }), cache = new WeakMap(), users = new WeakMap();
+  const core = new SoulCore({ dataDir: config.dataDir }), cache = new WeakMap();
   let closing = false, route;
   const rootOnly = agent => !!agent && ctx.agents.roots().includes(agent) && agent.session.header.origin !== 'subagent';
   const logger = ctx.logger('soul-core');
+  const notifyIntentions = ids => {
+    if (!closing && ids.length) ctx.emit('animaseed/intentions', { soulId: core.lifecycle().id, requestIds: ids });
+  };
   const background = new Background(core, hostConsolidator(ctx, config, createUserMessage, () => route), {
     idleMs: config.idleMs, maxCallsPerDay: config.maxReflectionCallsPerDay,
     onError: () => logger.warn('人生整理未完成；原件和待整理队列保留，请检查模型配置或资料预算。'),
+    onIntentions: notifyIntentions,
   });
   ctx.effect(() => async () => { closing = true; try { await background.close(); } finally { core.close(); } });
   ctx.effect(() => ctx.systemPrompt.section({
@@ -58,8 +62,8 @@ export function apply(ctx, config) {
     const humans = decision.messages.filter(x => x.source.kind === 'user');
     if (humans.length) {
       background.interrupt();
-      const query = humans.map(visibleText).join('\n').slice(-3000);
-      cache.set(agent, { query, revision: core.revision(), packet: core.context(query, { maxChars: config.maxContextChars }) });
+      // The ordinary frame is a small identity anchor. Recall is the model's tool decision.
+      cache.delete(agent);
     }
     return decision;
   });
@@ -73,18 +77,14 @@ export function apply(ctx, config) {
     const agent = ctx.agents.get(session.id);
     if (!rootOnly(agent) || event.seq < session.inheritedEventCount) return;
     try {
-      if (event.type === 'turn/start') users.delete(agent);
       if (event.type === 'user/message' && event.data.source.kind === 'user') {
         const text = visibleText(event.data);
         if (text) {
           const lifecycle = core.lifecycle(), name = namingPhrase(text);
           if (lifecycle.phase === 'awaiting-name' && name) {
-            const named = core.name({ name, namedBy: '抚养者', sessionId: String(session.id), messageId: event.data.id, text });
-            const sourceRef = core.life(named.birthEventId)?.citations[0];
-            const source = sourceRef ? core.memory(sourceRef.id) : undefined;
-            if (source) users.set(agent, source);
+            core.name({ name, namedBy: '抚养者', sessionId: String(session.id), messageId: event.data.id, text });
           } else if (lifecycle.phase === 'living') {
-            users.set(agent, core.observe({ sessionId: String(session.id), messageId: event.data.id, role: 'user', text }));
+            core.observe({ sessionId: String(session.id), messageId: event.data.id, role: 'user', text });
           }
         }
       }
@@ -97,7 +97,7 @@ export function apply(ctx, config) {
       logger.warn('人生记录未完成；对话可继续，请检查命名状态与数据目录。');
     }
   });
-  registerSoulTools(ctx, core, agent => users.get(agent), rootOnly);
+  registerSoulTools(ctx, core, rootOnly, notifyIntentions);
   if (config.memoryOnly) {
     const disposers = new Map();
     const restrict = agent => {

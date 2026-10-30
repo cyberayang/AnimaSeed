@@ -15,18 +15,18 @@ export interface SoulPayload extends Omit<Payload, 'identity'> {
   stage: { stage: Stage; at: string; eventId: string } | null;
   queue: { id: string; done: number }[];
 }
-export interface SoulArchive { format: 'soul-core'; version: 2; exportedAt: string; checksum: string; payload: SoulPayload }
+export interface SoulArchive { format: 'soul-core'; version: 2 | 3; exportedAt: string; checksum: string; payload: SoulPayload }
 export const digest = (value: unknown) => createHash('sha256').update(JSON.stringify(value)).digest('hex');
 export function packSoul(repo: SoulRepository, now: string): SoulArchive {
   const payload: SoulPayload = { identity: repo.store.identity() ?? null, lifecycle: repo.lifecycle(), memories: repo.store.all(),
     changes: repo.store.values('changes'), appraisals: repo.store.values('appraisals'), life: repo.all(),
     stage: repo.store.meta('soul.stage') ?? null,
     queue: repo.store.db.prepare('SELECT id,done FROM soul_queue ORDER BY id').all() as { id: string; done: number }[] };
-  return { format: 'soul-core', version: 2, exportedAt: now, checksum: digest(payload), payload };
+  return { format: 'soul-core', version: 3, exportedAt: now, checksum: digest(payload), payload };
 }
 export function validateSoulArchive(value: unknown): SoulArchive {
   const x = v.object(value);
-  if (x.format !== 'soul-core' || x.version !== 2) throw new Error('不支持的灵魂档案版本；旧档案须显式接续');
+  if (x.format !== 'soul-core' || (x.version !== 2 && x.version !== 3)) throw new Error('不支持的灵魂档案版本；旧档案须显式接续');
   if (digest(x.payload) !== x.checksum) throw new Error('灵魂档案校验失败');
   const p = v.object(x.payload), lifecycle = sv.lifecycle(p.lifecycle);
   let base: Omit<Payload, 'identity'> & { identity: Payload['identity'] | null };
@@ -38,6 +38,7 @@ export function validateSoulArchive(value: unknown): SoulArchive {
     base = validatePackage({ format: 'memory-core', version: 1, exportedAt: x.exportedAt, checksum: digest(payload), payload }).payload;
   }
   const life = v.list(p.life, 1000000).map(sv.entry), entries = new Map(life.map(row => [row.id, row]));
+  if (x.version === 2 && life.some(row => ['continuity', 'intention', 'permission', 'experience'].includes(row.kind))) throw new Error('自主生活记录需要版本3档案');
   if (entries.size !== life.length) throw new Error('重复人生事件ID');
   const memories = new Map(base.memories.map(row => [row.id, row]));
   const visited = new Set<string>(), stack = new Set<string>();
@@ -80,7 +81,7 @@ export function validateSoulArchive(value: unknown): SoulArchive {
       || (event.status === 'active' && event.details.stage !== stage.stage)) throw new Error('阶段状态与证据事件不一致');
   }
   const payload: SoulPayload = { ...base, lifecycle, life, stage, queue };
-  return { format: 'soul-core', version: 2, exportedAt: v.date(x.exportedAt), checksum: digest(payload), payload };
+  return { format: 'soul-core', version: x.version, exportedAt: v.date(x.exportedAt), checksum: digest(payload), payload };
 }
 export function saveSoulArchive(archive: SoulArchive, path: string, password?: string) { writeTransfer(archive, path, password); }
 export function loadSoulArchive(path: string, password?: string) { return validateSoulArchive(readTransfer(path, password)); }

@@ -8,7 +8,7 @@ import { observeLife, authorLife, requireLiving } from './soul-life.ts';
 import { growthSample, growthReview } from './soul-growth-evidence.ts';
 import { development, advance } from './soul-development.ts';
 import { privacyRedact } from './soul-privacy.ts';
-import { soulContext } from './soul-context.ts';
+import { soulContext, SOUL_RULES, SOUL_IDLE_RULES } from './soul-context.ts';
 import type { SoulContextOptions } from './soul-context.ts';
 import { reflectionInput, applyReflection } from './soul-reflection.ts';
 import { recall } from './retrieval.ts';
@@ -19,6 +19,8 @@ import * as v from './validation.ts';
 import { packSoul, validateSoulArchive } from './soul-archive.ts';
 import { restoreSoul } from './soul-restore.ts';
 import { affectState } from './soul-affect.ts';
+import { intend, intentions, hostPermission, hostExperience } from './soul-agency.ts';
+import type { IntentionInput, HostPermissionInput, HostExperienceInput } from './agency-types.ts';
 
 export interface SoulOptions { dataDir: string; clock?: () => Date }
 export class SoulCore {
@@ -28,7 +30,7 @@ export class SoulCore {
   #closed = false;
   constructor(options: SoulOptions) {
     this.#clock = options.clock ?? (() => new Date());
-    this.#store = new Store(options.dataDir, 2);
+    this.#store = new Store(options.dataDir, 3);
     this.#repo = new SoulRepository(this.#store);
     try { createSoulSchema(this.#store, this.now()); }
     catch (error) { this.#store.close(); throw error; }
@@ -57,6 +59,11 @@ export class SoulCore {
     });
   }
   record(input: LifeInput) { return this.#read(() => authorLife(this.#repo, input, this.now())); }
+  intend(input: IntentionInput) { return this.#read(() => intend(this.#repo, input, this.now())); }
+  intentions(limit = 8) { return this.#read(() => intentions(this.#repo, this.now(), limit)); }
+  hostPermission(input: HostPermissionInput) { return this.#read(() => hostPermission(this.#repo, input, this.now())); }
+  hostExperience(input: HostExperienceInput) { return this.#read(() => hostExperience(this.#repo, input, this.now())); }
+  idle() { return { kind: 'idle-opportunity', rules: SOUL_RULES + '\n' + SOUL_IDLE_RULES, context: this.context(''), intentions: this.intentions(4) }; }
   proposeGrowth(input: GrowthSampleInput) { return this.#read(() => growthSample(this.#repo, input, this.now())); }
   reviewGrowth(input: GrowthReviewInput) { return this.#read(() => growthReview(this.#repo, input, this.now())); }
   state() {

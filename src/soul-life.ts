@@ -53,17 +53,22 @@ export function authorLife(repo: SoulRepository, input: LifeInput, now: string):
     const repeated = repo.get(repeatedId);
     if (repeated) return repeated;
     if (previous.text.trim() === value.text.trim()) throw new Error('重复相同理解不构成学习变化');
-    const priorSources = new Set(ancestry(repo, previous.citations).memories.map(x => x.id));
-    if (!ancestry(repo, value.citations).memories.some(x => !priorSources.has(x.id))) throw new Error('修正认识需要新的真实经历，不能仅重复自述');
+    const evidenceIds = (refs: SourceRef[]) => {
+      const roots = ancestry(repo, refs);
+      return [...roots.memories.map(x => x.id), ...roots.entries.filter(x => x.kind === 'experience' && x.details.outcome === 'completed').map(x => x.id)];
+    };
+    const priorSources = new Set(evidenceIds(previous.citations));
+    if (!evidenceIds(value.citations).some(id => !priorSources.has(id))) throw new Error('修正认识需要新的真实经历，不能仅重复自述');
     const successor = repo.store.db.prepare("SELECT id FROM soul_life WHERE status='active' AND json_extract(data,'$.revisesId')=?").get(previous.id);
     if (successor) throw new Error('旧理解已有后续版本，请读取当前版本后再修正');
-  } else if (['understanding', 'interest', 'preference'].includes(value.kind)) {
+  } else if (['understanding', 'interest', 'preference', 'continuity'].includes(value.kind)) {
     const current = repo.current(value.kind, 100).find(x => x.topic === value.topic);
     if (current && current.text !== value.text) throw new Error('同一主题的认识已有记录，请保留revisesId变更链');
   }
   const roots = ancestry(repo, refs);
-  if (!roots.memories.some(x => x.role === 'user')) throw new Error('反思需要真实互动来源，不能只靠模型自说自话');
-  if (value.kind === 'choice' && !roots.memories.some(x => x.role === 'assistant')) throw new Error('选择必须引用已公开表达的实际选择');
+  const experiences = roots.entries.filter(x => x.kind === 'experience' && x.details.outcome === 'completed');
+  if (!roots.memories.some(x => x.role === 'user') && !experiences.length) throw new Error('反思需要真实互动来源或宿主经历，不能只靠模型自说自话');
+  if (value.kind === 'choice' && !roots.memories.some(x => x.role === 'assistant') && !experiences.length) throw new Error('选择必须引用已公开表达的实际选择或宿主完成回执');
   if (value.kind === 'feedback') {
     const choice = roots.entries.find(x => x.kind === 'choice');
     if (!choice || !roots.memories.some(x => x.role === 'user' && x.at > choice.at)) throw new Error('反馈需要选择之后的真实用户回应');
@@ -75,9 +80,9 @@ export function authorLife(repo: SoulRepository, input: LifeInput, now: string):
   let anchorKey: string | undefined;
   if (value.kind === 'affect') {
     const userSources = roots.memories.filter(x => x.role === 'user').sort((a, b) => b.at.localeCompare(a.at));
-    const latest = userSources[0].at;
+    const latest = [...userSources, ...experiences].map(x => x.at).sort().at(-1)!;
     if (!roots.memories.some(x => x.role === 'assistant' && x.at >= latest)) throw new Error('情绪评估需要真实互动及其公开回应，不能只按用户命令设置感受');
-    anchorKey = stableId('affect-anchor', userSources.filter(x => x.at === latest).map(x => x.id).sort());
+    anchorKey = stableId('affect-anchor', [...userSources, ...experiences].filter(x => x.at === latest).map(x => x.id).sort());
     const old = repo.list('affect', 10000).find(x => x.details.anchorKey === anchorKey);
     if (old) return old;
   }

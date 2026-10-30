@@ -4,7 +4,7 @@ import { SoulCore, SoulWorkspace, loadSoulArchive, saveSoulArchive } from '../sr
 import { startOnboarding } from './onboarding.ts';
 import { workspaceCommand, workspaceHelp } from './workspace.ts';
 
-const help = `AnimaSeed · 灵芽 0.2 · Node.js 24.14+
+const help = `AnimaSeed · 灵芽 0.3 · Node.js 24.14+
 node cli/main.ts <命令> [选项]
   start                                           首次交互命名，已有身份则继续
   init / status                                   查看等待命名或当前人生状态

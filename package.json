@@ -1,6 +1,6 @@
 {
   "name": "@animaseed/core",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "description": "AnimaSeed: a portable core for lifelong memory, evolving personality and identity across conversations",
   "repository": { "type": "git", "url": "https://github.com/cyberayang/AnimaSeed.git" },
   "homepage": "https://github.com/cyberayang/AnimaSeed#readme",

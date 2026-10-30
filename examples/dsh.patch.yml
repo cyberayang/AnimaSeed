@@ -6,10 +6,11 @@
       config:
         # 改为你自己的绝对人生目录；示例路径不会自动替换。
         dataDir: '/absolute/path/to/your/workspace/data/soul'
-        # 不设置时按问题在6000/12000字符预算间选择；需要时可固定至最高32000。
-        # maxContextChars: 12000
+        # 默认3000字符身份锚点，不自动全文检索；回忆由模型按需调用。
+        # maxContextChars: 3000
         idleMs: 120000
-        memoryOnly: true
+        # 保留宿主已有能力与权限；只开放核心工具时可改为true。
+        memoryOnly: false
         # 空闲整理默认复用最近根会话的模型；前台记忆准备没有额外网络请求。
         reflect: true
         maxReflectionCallsPerDay: 12

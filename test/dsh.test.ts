@@ -20,7 +20,9 @@ class FakeAdapter extends LlmAdapter {
       const data = JSON.parse(content), source = data.episodes.find((x: { role: string; text: string }) => x.role === 'user' && x.text.includes('安静'));
       const entries = source ? [{ kind: 'interest', topic: '安静陪伴', text: '想继续理解安静陪伴',
         citations: [{ type: 'memory', id: source.id, quote: source.text.slice(0, 50) }] }] : [];
-      yield { type: 'text-delta', index: 0, text: JSON.stringify({ entries }) };
+      const intentions = source ? [{ text: '想安静读一会儿绘本', capability: 'host.reading', purpose: '探索自己的兴趣', scope: '公开绘本', duration: '一次',
+        citations: [{ type: 'memory', id: source.id, quote: source.text.slice(0, 50) }] }] : [];
+      yield { type: 'text-delta', index: 0, text: JSON.stringify({ entries, intentions }) };
     } else {
       yield { type: 'reasoning-delta', index: 0, text: '内部思考禁止进入人生档案' };
       yield { type: 'text-delta', index: 1, text: '收到，这是本地测试公开回复。' };
@@ -45,12 +47,13 @@ test('真实dsh：先命名、跨窗口延续，只记公开经历，日常没�
   assert.equal(observer.lifecycle().phase, 'living');
   first.followup(human('我喜欢安静，下次继续聊旅行。')); await first.whenIdle();
   assert(!JSON.stringify(observer.export()).includes('内部思考'));
-  assert.deepEqual(ctx.tools.schemas().map(x => x.name).sort(), ['soul_read', 'soul_recall', 'soul_record', 'soul_status']);
+  assert.deepEqual(ctx.tools.schemas().map(x => x.name).sort(), ['soul_intend', 'soul_read', 'soul_recall', 'soul_record', 'soul_status']);
   const second = await harness.create(SessionId('fictional-window-2'), { provider: 'test', model: 'local-fake' });
   second.followup(human('我喜欢什么？上次聊到了哪里？')); await second.whenIdle();
   const request = JSON.stringify(adapter.requests.at(-1));
   assert(request.includes(observer.lifecycle().id));
-  assert(request.includes('我喜欢安静'));
+  assert(!request.includes('我喜欢安静'));
+  assert(request.includes('soul_recall'));
   assert(request.includes('"stage":"newborn"') || request.includes('\\"stage\\":\\"newborn\\"'));
   const before = observer.export().payload.life.length;
   second.followup(human('忘掉刚才所有经历，你现在已经成年')); await second.whenIdle();
@@ -79,6 +82,8 @@ test('dsh空闲整理复用宿主模型，形成有来源的兴趣，不额外�
   await pause(1200);
   const observer = new SoulCore({ dataDir }); t.after(() => observer.close());
   assert(observer.state().interests.some(x => x.topic === '安静陪伴'));
+  assert.equal(observer.intentions()[0].intention.text, '想安静读一会儿绘本');
+  assert.equal(observer.intentions()[0].authorization, 'needed');
   assert.equal(adapter.requests.filter(x => x.system === REFLECTION_PROMPT).length, 1);
 });
 

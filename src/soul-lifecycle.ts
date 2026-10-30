@@ -31,7 +31,7 @@ export function birth(repo: SoulRepository, input: NamingInput, now: string): Li
     principles: ['保留真实经历与来源', '通过交流形成认识，尊重不同意见', '承认不确定，遵守隐私边界'],
     baseline: { warmth: 0.5, directness: 0.5, curiosity: lifecycle.temperament.inquiry, restraint: lifecycle.temperament.caution } });
   repo.store.setMeta('soul.lifecycle', next);
-  repo.store.db.exec('PRAGMA user_version=2');
+  repo.store.db.exec('PRAGMA user_version=3');
   repo.store.audit('soul.birth', [id], now);
   repo.changed();
   return next;
@@ -45,5 +45,5 @@ export function adopt(repo: SoulRepository, confirmed: boolean, now: string): Li
     text: '接续既有身份；此前的出生与发展阶段尚未评估。', topic: '身份接续',
     citations: [{ type: 'memory', id: source.id, quote: source.text }], revisesId: null, confidence: 1, details: {} });
   const next: Lifecycle = { ...prior, phase: 'living', origin: 'adopted', birthEventId: event.id };
-  repo.store.setMeta('soul.lifecycle', next); repo.store.db.exec('PRAGMA user_version=2'); repo.changed(); return next;
+  repo.store.setMeta('soul.lifecycle', next); repo.store.db.exec('PRAGMA user_version=3'); repo.changed(); return next;
 }

@@ -6,6 +6,8 @@ import { stableId } from './memories.ts';
 import type { SoulArchive } from './soul-archive.ts';
 import type { LifeEntry, LifeInput, GrowthSampleInput, Stage } from './soul-types.ts';
 import { STAGES } from './soul-types.ts';
+import { intend, hostPermission, hostExperience } from './soul-agency.ts';
+import type { HostPermissionInput, HostExperienceInput } from './agency-types.ts';
 
 export function restoreSoul(repo: SoulRepository, archive: SoulArchive, now: string): void {
   if (repo.store.identity() || repo.store.all().length || repo.all().length || repo.lifecycle().phase !== 'awaiting-name') throw new Error('只能导入空灵魂目录，拒绝覆盖或合并不同人生');
@@ -29,7 +31,17 @@ export function restoreSoul(repo: SoulRepository, archive: SoulArchive, now: str
     const [row] = pending.splice(index, 1);
     if (row.status === 'redacted') { repo.put(row); continue; }
     let rebuilt: LifeEntry;
-    if (row.kind === 'growth-sample') rebuilt = growthSample(repo, row.details as unknown as GrowthSampleInput, row.at);
+    if (row.kind === 'intention') rebuilt = intend(repo, { text: row.text, capability: String(row.details.capability),
+      purpose: String(row.details.purpose), scope: String(row.details.scope), duration: String(row.details.duration), citations: row.citations,
+      revisesId: row.revisesId ?? undefined, state: row.details.intentionState as 'open' | 'withdrawn' }, row.at);
+    else if (row.kind === 'permission') rebuilt = hostPermission(repo, { ...row.details, text: row.text,
+      approval: row.citations[1] } as unknown as HostPermissionInput, row.at, String(row.details.epoch));
+    else if (row.kind === 'experience') {
+      const permission = repo.get(String(row.details.permissionId));
+      rebuilt = hostExperience(repo, { ...row.details, text: row.text, url: row.details.url || undefined } as unknown as HostExperienceInput,
+        row.at, String(permission?.details.epoch));
+    }
+    else if (row.kind === 'growth-sample') rebuilt = growthSample(repo, row.details as unknown as GrowthSampleInput, row.at);
     else if (row.kind === 'growth-review') rebuilt = growthReview(repo, { sampleId: String(row.details.sampleId),
       verdict: row.details.verdict as 'supported', rationale: row.text }, row.at);
     else if (row.kind === 'stage') {
@@ -52,7 +64,8 @@ export function restoreSoul(repo: SoulRepository, archive: SoulArchive, now: str
     } else rebuilt = authorLife(repo, { ...row, kind: row.kind as LifeInput['kind'], revisesId: row.revisesId ?? undefined,
       outcome: row.details.outcome as LifeInput['outcome'], interestState: row.details.interestState as LifeInput['interestState'],
       affect: row.kind === 'affect' ? { valence: Number(row.details.valence), arousal: Number(row.details.arousal), trust: Number(row.details.trust) } : undefined }, row.at);
-    if (!rebuilt || rebuilt.id !== row.id) throw new Error('重放人生记录与档案不一致：' + row.kind);
+    if (!rebuilt || rebuilt.id !== row.id || (['intention', 'permission', 'experience'].includes(row.kind)
+      && (JSON.stringify(rebuilt.details) !== JSON.stringify(row.details) || rebuilt.text !== row.text))) throw new Error('重放人生记录与档案不一致：' + row.kind);
   }
   if (p.stage) repo.store.setMeta('soul.stage', p.stage);
   for (const item of p.queue) repo.store.db.prepare('INSERT INTO soul_queue(id,done) VALUES(?,?)').run(item.id, item.done);

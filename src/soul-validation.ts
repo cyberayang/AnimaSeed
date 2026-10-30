@@ -13,9 +13,10 @@ export function refs(value: unknown): SourceRef[] {
 }
 export function lifeInput(value: unknown): LifeInput {
   const x = v.object(value);
-  if (!['understanding', 'choice', 'feedback', 'reflection', 'interest', 'preference', 'affect', 'autobiography'].includes(String(x.kind))) throw new Error('不能通过反思伪造出生、阶段或原始经历');
+  if (!['understanding', 'choice', 'feedback', 'reflection', 'interest', 'preference', 'affect', 'autobiography', 'continuity'].includes(String(x.kind))) throw new Error('不能通过反思伪造出生、阶段、授权或原始经历');
   if (x.outcome !== undefined && !['supported', 'uncertain', 'contradicted'].includes(String(x.outcome))) throw new Error('反馈结果不正确');
   if (x.interestState !== undefined && !['open', 'resolved'].includes(String(x.interestState))) throw new Error('兴趣状态不正确');
+  if (x.kind === 'continuity' && x.topic !== '近期生活') throw new Error('接续记录使用固定主题：近期生活');
   let affect: LifeInput['affect'];
   if (x.kind === 'affect') {
     const a = v.object(x.affect);
