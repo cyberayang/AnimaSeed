@@ -1,37 +1,42 @@
-# Contributing to AnimaSeed · 参与灵芽
+# 参与贡献
 
-欢迎通过Issue讨论问题、提供可复现案例，或通过Pull Request改进核心。中文和英文都可以。涉及产品边界的变化先说明具体使用场景。
+[中文首页](README.md) · [English](README.en.md)
 
-## 本地验证
+欢迎通过 Issue 提交问题、使用反馈，或通过 Pull Request 改进 AnimaSeed。中文和英文都可以。
 
-使用Node.js >=24.14.0：
+## 开始开发
+
+使用 Node.js **24.14.0 或更新版本**：
 
 ```sh
 npm ci --ignore-scripts
 npm run check
-npm run demo
 ```
 
-check包括严格类型检查、生产编译、自有模块不超过300行、依赖无环、核心不依赖第三方运行时，以及行为与独立打包安装测试。新增行为应有能证明用户结果的测试；文案调整通常不需新增测试。
+检查项与测试覆盖见[开发与测试](docs/testing.md)。涉及产品范围的变化，先描述具体使用场景。
 
-## 核心边界
+## 保持核心聚焦
 
-- 核心只负责身份、人生档案、记忆、人格与情感状态、成长依据和工作区接续，不添加通用执行能力或内置模型。
-- 智能体运行时、模型供应商、形象、语音和各平台接入由宿主解决。dsh适配是可选参考。
-- 每个个体保留唯一身份；原话、解释和用户确认分开，有来源的理解变化保留沿革。
-- 普通陪伴与独立隐私管理分开；清除过的资料不能经摘要或旧事件恢复。
-- 不声称已产生意识、主观情感或完整复制人脑。阶段和情绪参数需要可解释、可测量。
+- 核心负责身份、记忆、人格与情感状态、成长依据和跨对话接续。
+- 模型、执行能力、界面和形象由宿主提供，dsh 适配作为可选参考。
+- 原话、模型解释和用户确认分开保存，认识变化保留来源与沿革。
+- 隐私清除传播至相关衍生内容，避免旧事件或摘要恢复已清除资料。
+- 对发展阶段和情绪状态保持可解释、可验证的表述。
 
-## 提交与报告
+设计说明见[记忆与成长](docs/memory-and-growth.md)和[架构说明](docs/architecture.md)。
 
-使用虚构档案复现问题，不上传data、.soul、导出包、模型密钥或宿主原始对话。描述修改前后的行为、验证结果和实际限制。
+## 提交问题与修改
 
-不要在公开Issue粘贴私人记忆或凭据。如发现数据泄露问题，先提供不含私人正文的最小复现与受影响版本。
+使用虚构资料提供最小复现，说明预期行为、实际结果和运行环境。不要在公开 Issue 中粘贴私人记忆、密钥或宿主原始对话。
 
-提交贡献表示你有权提供这些修改，并按仓库[MIT许可证](LICENSE)授权。
+提交修改时，说明用户可见的变化和验证结果。新增行为应有对应测试，文案调整无需为实现细节增加测试。
 
-## English
+贡献应为你有权提供的内容，并按仓库的 [MIT 许可证](LICENSE)授权。
 
-Use Node.js >=24.14.0, install with `npm ci --ignore-scripts`, and run `npm run check`. Keep the core model-free, host-independent, and limited to memory, identity, evidence-backed development, and continuity. Host integrations and optional extensions should preserve provenance and privacy removal semantics.
+## For English-speaking contributors
 
-Use fictional data for tests and bug reports. Describe the user-visible change, validation, and remaining limits. Do not upload personal archives, host conversations, or credentials. Contributions are made under the repository's MIT license.
+Use Node.js 24.14.0 or newer, install with `npm ci --ignore-scripts`, and run `npm run check`.
+
+Keep the core focused on memory, identity, and evidence-backed development. Host integrations supply models, capabilities, and interfaces. Use fictional data for reproductions, describe the user-visible change, and preserve provenance and privacy-removal behavior.
+
+Contributions are licensed under [MIT](LICENSE).
