@@ -2,37 +2,76 @@
 
 # AnimaSeed · 灵芽
 
-**From a first name, growing into a self.**
+### A conversation ends. A life carries on.
 
-A portable core for memory, personality, and identity across conversations.
+An open-source soul core for memory, personality, and emotional development.<br>
+From the first name onward, every experience can become part of a self.
 
-[![Check](https://github.com/cyberayang/AnimaSeed/actions/workflows/check.yml/badge.svg)](https://github.com/cyberayang/AnimaSeed/actions/workflows/check.yml) [![MIT License](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
+[![Check](https://github.com/cyberayang/AnimaSeed/actions/workflows/check.yml/badge.svg)](https://github.com/cyberayang/AnimaSeed/actions/workflows/check.yml)
+[![MIT License](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 
-[中文](README.md) · [Getting started](docs/getting-started.md) · [Integration](docs/integration.md) · [Documentation](docs/README.md)
+[中文](README.md) · [Get started](docs/getting-started.md) · [Host integration](docs/integration.md) · [Documentation](docs/README.md)
 
 </div>
 
-## A continuous life across conversations
+---
 
-AnimaSeed preserves an individual's identity, experiences, changing understanding, and unfinished topics beyond a single chat window.
+## Designed for a self that continues
 
-It begins with an explicit name. Memories accumulate, interests develop, and interpretations can change while their history remains available. A new conversation resumes from the same life archive.
+A long conversation can develop familiarity, preferences, emotional nuance, and a distinctive way of relating. Context compression and new chat windows can scatter those details.
 
-The host agent supplies the language model, conversation interface, and avatar. AnimaSeed provides the persistent core.
+**AnimaSeed gives identity a home beyond the conversation window.**
 
-## Features
+A name, shared experiences, evolving interpretations, and unfinished thoughts accumulate in one life archive. New conversations resume from that history. Earlier understanding can change, and those changes leave a trace of their own.
 
-| Feature | What it provides |
-| --- | --- |
-| **Continuous identity** | A name, birth date, and development history independent of chat windows |
-| **Self-directed recall** | A small identity anchor for normal conversation; the model chooses when to retrieve |
-| **Evolving self** | Evidence-backed understanding, interests, and preferences with revision history |
-| **Gradual development** | Progress based on elapsed time, lived interactions, and later feedback |
-| **Portable life archive** | Encrypted export and import that preserve identity and source relationships |
-| **Independent core** | The host's existing model; only Node.js built-ins in the core runtime |
-| **Open-ended intentions** | Propose leisure, exploration, or companionship; the host connects capabilities and user authorization |
+At first launch, the individual is unnamed, without a prewritten adult past. You give them a name. What follows becomes the history they grow from.
 
-## Get started
+> Memory preserves what happened. Personality develops through interpretation. Continuity is built each time a life is resumed.
+
+## How memory becomes a self
+
+| Foundation | Design |
+| :--- | :--- |
+| **Identity across conversations** | Name, birth date, and development history persist in the same archive. |
+| **Memory with provenance** | Original experiences, later interpretations, and confirmations remain distinct. Revisions retain their sources and history. |
+| **Personality through experience** | Interests, preferences, choices, and affective states have traceable foundations, with room for disagreement and change. |
+| **Development over time** | Real elapsed time, meaningful interactions, and later feedback support gradual growth. Offline time creates no invented experiences. |
+| **Room for initiative** | Propose exploration, leisure, or companionship, and revise those intentions. The host handles capabilities and authorization; actual outcomes can become experiences. |
+| **A portable life** | Encrypted export and import preserve identity, memories, and source relationships. A new host revalidates permissions. |
+
+## Let the model choose when to remember
+
+Each model call retains a compact identity entry and core principles. When the current context is sufficient, conversation proceeds naturally. When past details matter, the model can consult memory. It also chooses when to preserve unfinished topics and new understanding.
+
+**Normal conversation performs no full-text search by default and adds no separate retrieval-decision model.** The core does not require advance notice of context compression.
+
+```mermaid
+flowchart LR
+    A[Identity and recent life] --> B[Host model]
+    B -->|Recall as needed| C[(Life archive)]
+    C -->|Experience and sources| B
+    B -->|Real interactions and new understanding| C
+    C --> A
+```
+
+The full archive stays local. A compact entry supports continuity; deliberate recall recovers detail. The quality of that continuity depends on the host preserving the entry, recording interactions correctly, and the model using memory well.
+
+## One core, many ways to connect
+
+AnimaSeed holds identity and life history. The host supplies the model, tools, interface, and embodiment.
+
+An individual may meet you through text, a voice, a desktop character, or another host-provided interface. They can express what they want to do. The host handles capability access and execution within authorized bounds, then returns the actual outcome to the archive.
+
+| AnimaSeed | The host agent |
+| :--- | :--- |
+| Persistent identity, memory, and provenance | Language model and conversation runtime |
+| Personality, affective state, and development evidence | Tools, external services, and interface |
+| Records for intentions, permissions, and experiences | User authorization and actual execution |
+| Local archives, encrypted migration, and privacy management | Avatars, voice, and wake-up scheduling |
+
+The core runtime uses **Node.js built-ins only**. A workspace protocol, SDK, and reference dsh adapter are available. See [host integration](docs/integration.md).
+
+## Plant the first seed
 
 Requires **Node.js 24.14.0 or newer**.
 
@@ -44,44 +83,38 @@ npm run build
 node dist/cli/main.js workspace-init
 ```
 
-Open the directory in an agent that can read `AGENTS.md` and run local commands. Follow the workspace guide and confirm the first name with:
+Open the directory in an agent that can read `AGENTS.md` and run local commands. Follow the workspace guide and give the individual their first name:
 
 > name: Willow
 
-Naming syntax accepts `name:` or `给你起名：`. The generated guide and conversation rules currently use Chinese.
+Naming accepts `name:` or `给你起名：`. The generated guide and conversation rules currently use Chinese.
 
-Reopen conversations against the same archive to continue. The host reads memory and writes back actual interactions; see [the integration guide](docs/integration.md) for the lifecycle contract.
+Continue daily conversations against the same archive. See [getting started](docs/getting-started.md) for setup, naming, and resuming in a new conversation.
 
-## How continuity works
-
-```mermaid
-flowchart LR
-    A[Open chat] --> B[Restore identity]
-    B --> C[Talk and recall as needed]
-    C --> D[Save experience]
-    D --> E[(Life archive)]
-    E --> B
-```
-
-The full archive stays local. Normal calls carry a small identity anchor without full-text search. The model chooses when to recall and maintain a recent-life note, without requiring advance notice of context compression.
-
-## Documentation
+## Explore further
 
 The detailed guides are currently in Chinese.
 
-- [Getting started](docs/getting-started.md): setup, naming, and daily use.
-- [Memory and development](docs/memory-and-growth.md): experiences, interpretations, preferences, and growth.
-- [Host integration](docs/integration.md): workspace protocol, SDK, and the optional dsh adapter.
-- [Agency and host cooperation](docs/agency.md): intentions, idle opportunities, permission requests, and observed experiences.
-- [Archive management](docs/data-management.md): backup, migration, and privacy removal.
-- [Optional extensions](docs/extensions.md): cross-workspace continuity, synchronization, retrieval, and avatars.
+| Explore | Guide |
+| :--- | :--- |
+| Daily use and continuity across conversations | [Getting started](docs/getting-started.md) |
+| Experience, memory, interpretation, and development | [Memory and development](docs/memory-and-growth.md) |
+| Connecting your own agent | [Host integration](docs/integration.md) |
+| Intentions, permission requests, and observed outcomes | [Agency and host cooperation](docs/agency.md) |
+| Backup, migration, and privacy | [Archive management](docs/data-management.md) |
+| Structure and implementation | [Architecture](docs/architecture.md) |
+| Cross-workspace continuity, synchronization, and embodiment | [Optional extensions](docs/extensions.md) |
 
-AnimaSeed is experimental. Personality and affect are evidence-backed state models, not evidence of consciousness or subjective feelings.
+“Soul” expresses the project's design ambition. The implementation explores continuity through traceable memory, personality, and affective state models; it makes no claim of consciousness or subjective feelings.
 
-## Contributing
+---
 
-Issues, feedback, and pull requests are welcome. See [the contribution guide](CONTRIBUTING.md).
+Help shape AnimaSeed through issues and pull requests. See [contributing](CONTRIBUTING.md).
 
-## License
+Open source under the [MIT License](LICENSE).
 
-[MIT](LICENSE)
+<div align="center">
+
+**AnimaSeed · From a first name, growing into a self.**
+
+</div>
