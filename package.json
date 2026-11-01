@@ -9,18 +9,19 @@
   "type": "module",
   "private": true,
   "license": "MIT",
-  "engines": { "node": ">=24.14.0", "dsh": "0.2.1-rc.2" },
+  "engines": { "node": ">=24.14.0", "dsh": ">=0.2.1-rc.2" },
   "exports": { ".": { "types": "./dist/src/index.d.ts", "default": "./dist/src/index.js" }, "./dsh": "./adapters/dsh/plugin.mjs" },
   "bin": { "animaseed": "./dist/cli/main.js", "memory-core": "./dist/cli/main.js", "soul-core": "./dist/cli/main.js" },
   "files": ["dist", "adapters", "README.md", "README.en.md", "docs", "examples/dsh.patch.yml"],
   "scripts": {
     "build": "tsc -p tsconfig.build.json",
+    "prepare": "tsc -p tsconfig.build.json",
     "prepack": "npm run build",
     "check": "tsc --noEmit && npm run build && node scripts/check.mjs && node --test test/*.test.ts",
     "test": "npm run build && node --test test/*.test.ts",
     "demo": "node examples/continuity.ts",
-    "start": "node cli/main.ts start",
-    "core": "node cli/main.ts"
+    "start": "node --disable-warning=ExperimentalWarning cli/main.ts start",
+    "core": "node --disable-warning=ExperimentalWarning cli/main.ts"
   },
   "peerDependencies": {
     "@deepseek-ai/dsh-llm": "0.2.1-rc.2",
