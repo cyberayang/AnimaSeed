@@ -14,4 +14,6 @@ export type { SoulArchive } from './soul-archive.ts';
 export type * from './soul-types.ts';
 export { SoulWorkspace, initializeWorkspace } from './workspace.ts';
 export type { WorkspaceMessage, WorkspaceReply } from './workspace.ts';
+export { readScope, writeScope, parseScope, SCOPE_FILE, DEFAULT_SCOPE } from './scope.ts';
+export type { ScopeSettings, RecordScope } from './scope.ts';
 export type { HostPermissionInput, HostExperienceInput, IntentionView } from './agency-types.ts';

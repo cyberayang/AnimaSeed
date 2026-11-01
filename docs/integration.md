@@ -176,6 +176,13 @@ config:
   companionDirs: ['D:\你的陪伴工作区']
 ```
 
+也可以通过 `workspace-scope` 命令在起名后设定（写入档案目录的 `scope.json`，插件与 CLI 都会读取，无需手改插件配置）：
+
+```sh
+node dist/cli/main.js workspace-scope --scope companion-only --dir "D:\你的陪伴工作区"
+node dist/cli/main.js workspace-scope --scope all
+```
+
 > **与桌面应用的兼容**：桌面版 dsh 将内置的 `desktop` profile 保留给自己管理，命令行无法直接操作它；在该形态下请使用图形界面的插件管理完成安装。
 
 ### 其他智能体共用同一份档案

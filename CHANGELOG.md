@@ -9,6 +9,9 @@
 - 支持直接从仓库安装为 dsh 插件：`package.json` 增加 `prepare` 脚本，pnpm 从 git 拉取后自动构建 `dist/`，无需先手动 `npm pack`。
 - dsh 插件的 `dataDir` 改为可选：未配置时自动落在 `$DSH_HOME/soul-data`，**装完即可用，无需手写配置**；填写时仍要求绝对路径。
 - dsh 插件新增 `recordScope`（`companion-only` 默认 / `exclude` / `all`）与 `companionDirs`、`excludeDirs`：按会话工作目录决定哪些对话写进人生档案，让代码/工作会话不混入她的经历；命名与出生始终允许。未配置目录时等同 `all`，保持装完即用。
+- 新增 `workspace-scope` 命令：起名后可用一句话设定记录范围与陪伴目录，写入档案目录的 `scope.json`；dsh 插件与 CLI 都读取它，用户无需手改插件配置。
+- dsh 插件读取档案目录下的 `scope.json`，优先于插件内配置，起名后设定即生效。
+- 引导文档（`.soul/GUIDE.md` 与 AGENTS 段）加入“起名后的安家问答”：用有代入感的口吻询问“要把这里作为我们的家么”“只记家里还是都记下来”，再调用 `workspace-scope` 写入。
 - 新增非 dsh 宿主接入示例 [`examples/host-bridge.ts`](examples/host-bridge.ts)（`npm run demo:bridge`），演示 open、receive、reply、record、recall 的一轮接续与跨进程身份保持。
 - README 增加「作为 dsh 插件安装」路径，指向接入文档。
 

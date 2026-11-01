@@ -9,6 +9,7 @@ import { mountAgentLoopTestDependencies, mountAgentLoopTestHarness } from '@deep
 import * as plugin from '../adapters/dsh/plugin.mjs';
 import { Background, REFLECTION_PROMPT } from '../adapters/dsh/background.mjs';
 import { SoulCore } from '../src/index.ts';
+import { writeScope as writeScopeFile } from '../src/scope.ts';
 import { directory, fixture } from './helpers.ts';
 
 class FakeAdapter extends LlmAdapter {
@@ -170,4 +171,23 @@ test('记录范围：白名单只记陪伴目录、黑名单排除代码目录�
   assert.equal(plugin.shouldRecord(project, { recordScope: 'all' }), true);
   // 相对路径的目录配置被忽略，不误伤。
   assert.equal(plugin.shouldRecord(project, { recordScope: 'companion-only', companionDirs: ['relative'] }), true);
+});
+
+test('scope.json 生效：命名照常，但白名单外（含无 cwd）的对话不入档', async t => {
+  const dataDir = directory(t), ctx = new Context();
+  t.after(async () => ctx.fiber.dispose());
+  // 写入 scope.json：companion-only，白名单是某个其它目录。测试会话 cwd 为 undefined，按规则不记录。
+  const allowDir = process.platform === 'win32' ? 'D:\\companion-test' : '/companion-test';
+  writeScopeFile(dataDir, { scope: 'companion-only', companionDirs: [allowDir] });
+  await mountAgentLoopTestDependencies(ctx);
+  await ctx.plugin(plugin, { dataDir, reflect: false });
+  const harness = await mountAgentLoopTestHarness(ctx);
+  const agent = await harness.create(SessionId('scope-window'), { provider: 'test', model: 'local-fake' });
+  agent.followup(human('给你起名：小禾')); await agent.whenIdle();
+  agent.followup(human('我喜欢安静，下次继续聊旅行。')); await agent.whenIdle();
+  const observer = new SoulCore({ dataDir }); t.after(() => observer.close());
+  // 命名始终允许（不受范围限制）。
+  assert.equal(observer.lifecycle().phase, 'living');
+  // 白名单外且无 cwd：日常对话不写入真实互动条目。
+  assert.equal(observer.timeline().filter(x => x.kind === 'interaction').length, 0);
 });

@@ -1,7 +1,8 @@
 import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
-import { resolve } from 'node:path';
+import { resolve, join } from 'node:path';
 import { SoulWorkspace, initializeWorkspace } from '../src/workspace.ts';
+import { writeScope, readScope } from '../src/scope.ts';
 import type { WorkspaceMessage, WorkspaceReply } from '../src/workspace.ts';
 import type { LifeInput } from '../src/soul-types.ts';
 import type { IntentionInput } from '../src/agency-types.ts';
@@ -17,12 +18,15 @@ export const workspaceHelp = `工作区闭环（只用宿主模型，无独立�
   workspace-idle                                  宿主空闲唤醒资料，不自动调用模型
   workspace-recall --text <主题>                   查找早期经历
   workspace-read --type memory|life --id <ID>       按ID展开
+  workspace-scope --scope companion-only|exclude|all [--dir <绝对路径>] [--exclude <绝对路径>]
+                                                  起名后设定记录范围：只记陪伴目录还是全部；
+                                                  --dir 追加陪伴目录，--exclude 追加排除目录
 工作区选项：--workspace <目录> 默认当前目录；open/receive默认仅提供简短锚点，无全文检索。
 显式 --mode recall 可组装回忆快照；--max-chars 2000至32000。
 正文JSON的sessionId/messageId来自真实宿主消息并在重试时保持稳定。`;
 
 export function workspaceCommand(command: string, flags: Record<string, string>) {
-  if (!['workspace-init', 'workspace-open', 'workspace-receive', 'workspace-reply', 'workspace-record', 'workspace-recall', 'workspace-read', 'workspace-intend', 'workspace-intentions', 'workspace-idle'].includes(command)) throw new Error('未知工作区命令');
+  if (!['workspace-init', 'workspace-open', 'workspace-receive', 'workspace-reply', 'workspace-record', 'workspace-recall', 'workspace-read', 'workspace-intend', 'workspace-intentions', 'workspace-idle', 'workspace-scope'].includes(command)) throw new Error('未知工作区命令');
   if (flags.data) throw new Error('工作区命令依据已绑定身份，不接受--data临时换人');
   const root = resolve(flags.workspace ?? process.cwd());
   if (command === 'workspace-init') return initializeWorkspace(root, [process.execPath,
@@ -33,6 +37,20 @@ export function workspaceCommand(command: string, flags: Record<string, string>)
     if (raw.length > 64000) throw new Error('工作区请求JSON超过64000字符');
     return JSON.parse(raw.replace(/^\uFEFF/u, ''));
   };
+  if (command === 'workspace-scope') {
+    // 起名后设定记录范围；写入档案目录的 scope.json，dsh 插件与 CLI 都会读取。
+    const workspace = new SoulWorkspace(root);
+    try {
+      const dataDir = join(workspace.workspaceDir, 'data/soul');
+      const current = readScope(dataDir) ?? { version: 1 as const, scope: 'companion-only' as const, companionDirs: [], excludeDirs: [] };
+      const scope = flags.scope ?? current.scope;
+      const companionDirs = [...current.companionDirs];
+      const excludeDirs = [...current.excludeDirs];
+      if (flags.dir && !companionDirs.includes(resolve(flags.dir))) companionDirs.push(resolve(flags.dir));
+      if (flags.exclude && !excludeDirs.includes(resolve(flags.exclude))) excludeDirs.push(resolve(flags.exclude));
+      return writeScope(dataDir, { scope, companionDirs, excludeDirs });
+    } finally { workspace.close(); }
+  }
   if (flags.mode !== undefined && flags.mode !== 'anchor' && flags.mode !== 'recall') throw new Error('mode需要anchor或recall');
   const options = { maxChars: flags['max-chars'] === undefined ? undefined : Number(flags['max-chars']), mode: flags.mode as 'anchor' | 'recall' | undefined };
   const workspace = new SoulWorkspace(root);

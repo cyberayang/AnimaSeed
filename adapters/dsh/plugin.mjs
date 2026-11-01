@@ -3,6 +3,7 @@ import { homedir } from 'node:os';
 import z from '@deepseek-ai/schemastery';
 import { createUserMessage } from '@deepseek-ai/dsh-llm';
 import { SoulCore, SOUL_RULES, namingPhrase } from '../../dist/src/index.js';
+import { readScope } from '../../dist/src/scope.js';
 import { Background, hostConsolidator } from './background.mjs';
 import { registerSoulTools, SOUL_TOOLS } from './tools.mjs';
 
@@ -66,6 +67,14 @@ const visibleText = message => (message?.content ?? []).filter(x => x.type === '
 export function apply(ctx, config) {
   const dataDir = resolveDataDir(config.dataDir);
   if (!!config.reflectionProvider !== !!config.reflectionModel) throw new Error('整理模型需同时指定provider和model');
+  // scope.json（由起名后的 workspace-scope 写入）优先于插件配置，便于用户对话中设定后立刻生效。
+  let fileScope;
+  try { fileScope = readScope(dataDir); } catch { fileScope = undefined; }
+  const effectiveConfig = fileScope ? {
+    ...config, recordScope: fileScope.scope,
+    companionDirs: fileScope.companionDirs.length ? fileScope.companionDirs : config.companionDirs,
+    excludeDirs: fileScope.excludeDirs.length ? fileScope.excludeDirs : config.excludeDirs,
+  } : config;
   const core = new SoulCore({ dataDir }), cache = new WeakMap();
   let closing = false, route;
   const rootOnly = agent => !!agent && ctx.agents.roots().includes(agent) && agent.session.header.origin !== 'subagent';
@@ -124,7 +133,7 @@ export function apply(ctx, config) {
     try {
       // 命名/出生始终允许，不受记录范围限制，避免在代码目录里开的首次会话无法命名。
       const cwd = session.header.cwd;
-      const recording = shouldRecord(cwd, config);
+      const recording = shouldRecord(cwd, effectiveConfig);
       if (event.type === 'user/message' && event.data.source.kind === 'user') {
         const text = visibleText(event.data);
         if (text) {
