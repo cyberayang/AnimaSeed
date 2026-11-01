@@ -8,7 +8,7 @@ if exist "%~dp0dist\cli\main.js" goto launch
 call npm run build
 if errorlevel 1 goto finish
 :launch
-node "%~dp0dist\cli\main.js" start
+node --disable-warning=ExperimentalWarning "%~dp0dist\cli\main.js" start
 goto finish
 :missingnode
 echo 请先安装 Node.js 24.14 或更新版本。

@@ -42,6 +42,8 @@ npm start
 
 Windows 也可双击根目录的 `启动灵魂核心.cmd`。终端入口提供命名和状态查看，日常聊天使用接入的智能体。
 
+> 本地档案使用 Node.js 内置的 SQLite。Node 24 会在运行命令时提示 `SQLite is an experimental feature`，该提示不影响功能；启动脚本与 `npm start` 已通过 `--disable-warning=ExperimentalWarning` 关闭它。直接运行 `node dist/cli/main.js` 时可以同样加上该参数。
+
 ## 3. 日常交流
 
 宿主按照 `.soul/GUIDE.md` 完成记忆读取和写回，你可以像平常一样交流。
