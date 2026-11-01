@@ -129,18 +129,41 @@ try {
 
 ## dsh 参考适配
 
-验证基线：**dsh 0.2.1-rc.2**。
+验证基线：**dsh 0.2.1-rc.2**。dsh 以插件方式加载本核心，插件入口为 `@animaseed/core/dsh`。安装方式取决于你使用的 dsh 形态。
 
-1. 在核心项目运行 `npm pack`。
-2. 通过 dsh 插件管理安装生成的本地压缩包。
-3. 将 [dsh.patch.yml](../examples/dsh.patch.yml) 合并到目标 profile 的 `cordis.patch.yml`。
-4. 将 `dataDir` 改为自己人生档案的绝对路径，重启该 profile。
+### 安装方式
+
+dsh 插件安装器接受 **GitHub 仓库地址**、npm 包名或本地压缩包。仓库已带 `prepare` 脚本，从 git 安装时会自动构建 `dist/`，无需先手动 `npm pack`。
+
+| dsh 形态 | 推荐方式 |
+| --- | --- |
+| 桌面应用 | 在插件管理界面粘贴仓库地址 `github:<你的用户名>/AnimaSeed`，或从 Releases 下载 `.tgz` 后选择本地文件 |
+| npm / 命令行版 | `dsh plugin --profile <profile名> add github:<你的用户名>/AnimaSeed` |
+
+从 git 安装等价于 pnpm 拉取仓库并执行 `prepare` 构建。npm 包发布形态（`@animaseed/core`）同样支持。
+
+### 配置
+
+1. 安装后，将 [dsh.patch.yml](../examples/dsh.patch.yml) 的 `insert` 段合并到目标 profile 的 `cordis.patch.yml`。
+2. 将 `dataDir` 改为本人生档案的绝对路径，重启该 profile。
+
+`dataDir` 指向哪份档案，就是哪一个她。同一 `dataDir` 不要被多个进程同时写入。
+
+> **与桌面应用的兼容**：桌面版 dsh 将内置的 `desktop` profile 保留给自己管理，命令行无法直接操作它；在该形态下请使用图形界面的插件管理完成安装。
+
+### 其他智能体共用同一份档案
+
+非 dsh 的宿主通过 [SDK](#sdk) 或工作区命令读取档案，需要 `.soul/workspace.json` 绑定。若档案先由 dsh 插件创建（裸档案），请在该工作区根目录补一次绑定：
 
 ```sh
-dsh plugin --profile <profile名称> add <压缩包的绝对路径>
+node dist/cli/main.js workspace-init
 ```
 
-插件入口为 `@animaseed/core/dsh`。普通对话提供五个接口：
+已存在的身份会被登录进绑定，不会重建或改名。之后 `workspace-*` 命令与 dsh 插件指向同一份 `data/soul`。
+
+### 对话接口
+
+普通对话提供五个接口：
 
 | 工具 | 用途 |
 | --- | --- |
