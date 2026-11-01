@@ -158,6 +158,24 @@ config:
 
 `dataDir` 指向哪份档案，就是哪一个她。同一 `dataDir` 不要被多个进程同时写入。
 
+### 记录范围：让陪伴保持干净
+
+有时代码、调试、安装这类工作会话并不想变成她的人生经历。`recordScope` 决定哪些会话的日常对话写进档案（命名与出生始终允许）：
+
+| `recordScope` | 行为 |
+| --- | --- |
+| `companion-only`（默认） | 只记录 `companionDirs` 下的会话；未填 `companionDirs` 时等同 `all`，装完即用 |
+| `exclude` | 记录全部，但排除 `excludeDirs` 下的会话（例如项目代码目录） |
+| `all` | 全部记录 |
+
+`companionDirs` / `excludeDirs` 填绝对路径；判定按会话的工作目录（`session.header.cwd`），子目录一并生效。用白名单时，拿不到目录信息的会话按"不记"处理，避免污染。
+
+```yaml
+config:
+  recordScope: companion-only
+  companionDirs: ['D:\你的陪伴工作区']
+```
+
 > **与桌面应用的兼容**：桌面版 dsh 将内置的 `desktop` profile 保留给自己管理，命令行无法直接操作它；在该形态下请使用图形界面的插件管理完成安装。
 
 ### 其他智能体共用同一份档案

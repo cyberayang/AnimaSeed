@@ -1,4 +1,4 @@
-import { isAbsolute, join } from 'node:path';
+import { isAbsolute, join, resolve as resolvePath, sep } from 'node:path';
 import { homedir } from 'node:os';
 import z from '@deepseek-ai/schemastery';
 import { createUserMessage } from '@deepseek-ai/dsh-llm';
@@ -17,6 +17,13 @@ export const Config = z.object({
   reflect: z.boolean().default(true),
   maxReflectionCallsPerDay: z.number().step(1).min(0).max(48).default(12),
   reflectionProvider: z.string(), reflectionModel: z.string(),
+  // 记录范围：决定哪些会话的日常经历写进人生档案。
+  // companion-only：只记 companionDirs 下的会话；未配置 companionDirs 时等同 all。
+  // exclude：记全部，但排除 excludeDirs 下的会话（如代码项目目录）。
+  // all：全部记录。
+  recordScope: z.union(['companion-only', 'exclude', 'all']).default('companion-only'),
+  companionDirs: z.array(z.string()).default([]),
+  excludeDirs: z.array(z.string()).default([]),
 });
 // 未显式配置 dataDir 时的默认档案目录：优先 $DSH_HOME，其次 ~/.dsh。
 export function resolveDataDir(configured) {
@@ -27,6 +34,32 @@ export function resolveDataDir(configured) {
   }
   const home = process.env.DSH_HOME?.trim() || join(homedir(), '.dsh');
   return join(home, 'soul-data');
+}
+// 判断某个目录是否落在给定目录（含其自身）之下，按路径分段而非字符串前缀。
+function underAny(cwd, dirs) {
+  if (!cwd) return false;
+  const target = resolvePath(cwd);
+  return dirs.some(dir => {
+    const root = resolvePath(dir);
+    return target === root || target.startsWith(root.endsWith(sep) ? root : root + sep);
+  });
+}
+// 根据会话工作目录决定是否把日常经历写进档案。命名/出生不受此限。
+export function shouldRecord(cwd, config) {
+  const scope = config.recordScope ?? 'companion-only';
+  const isAbsoluteDir = dir => typeof dir === 'string' && dir.trim() !== '' && isAbsolute(dir.trim());
+  if (scope === 'all') return true;
+  if (scope === 'exclude') {
+    const excluded = (config.excludeDirs ?? []).filter(isAbsoluteDir).map(x => x.trim());
+    if (!excluded.length) return true;
+    // 拿不到 cwd 时保守不排除，避免误伤。
+    return cwd ? !underAny(cwd, excluded) : true;
+  }
+  // companion-only
+  const companions = (config.companionDirs ?? []).filter(isAbsoluteDir).map(x => x.trim());
+  if (!companions.length) return true; // 未配置白名单：装完即用，等同全记。
+  if (!cwd) return false; // 有白名单但拿不到目录：干净优先，不记。
+  return underAny(cwd, companions);
 }
 const visibleText = message => (message?.content ?? []).filter(x => x.type === 'text').map(x => x.text).join('\n');
 
@@ -89,22 +122,25 @@ export function apply(ctx, config) {
     const agent = ctx.agents.get(session.id);
     if (!rootOnly(agent) || event.seq < session.inheritedEventCount) return;
     try {
+      // 命名/出生始终允许，不受记录范围限制，避免在代码目录里开的首次会话无法命名。
+      const cwd = session.header.cwd;
+      const recording = shouldRecord(cwd, config);
       if (event.type === 'user/message' && event.data.source.kind === 'user') {
         const text = visibleText(event.data);
         if (text) {
           const lifecycle = core.lifecycle(), name = namingPhrase(text);
           if (lifecycle.phase === 'awaiting-name' && name) {
             core.name({ name, namedBy: '抚养者', sessionId: String(session.id), messageId: event.data.id, text });
-          } else if (lifecycle.phase === 'living') {
+          } else if (lifecycle.phase === 'living' && recording) {
             core.observe({ sessionId: String(session.id), messageId: event.data.id, role: 'user', text });
           }
         }
       }
-      if (event.type === 'assistant/message' && !event.data.interrupted && core.lifecycle().phase === 'living') {
+      if (event.type === 'assistant/message' && !event.data.interrupted && recording && core.lifecycle().phase === 'living') {
         const text = visibleText(event.data.message);
         if (text) core.observe({ sessionId: String(session.id), messageId: event.data.message.id, role: 'assistant', text });
       }
-      if (event.type === 'turn/end' && event.data.reason.kind === 'completed') background.schedule();
+      if (event.type === 'turn/end' && event.data.reason.kind === 'completed' && recording) background.schedule();
     } catch {
       logger.warn('人生记录未完成；对话可继续，请检查命名状态与数据目录。');
     }

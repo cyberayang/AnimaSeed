@@ -147,3 +147,27 @@ test('未配置 dataDir 时落到 $DSH_HOME/soul-data，装完即可用；显式
   assert.equal(plugin.resolveDataDir(absolute), absolute);
   assert.throws(() => plugin.resolveDataDir('relative/dir'), /绝对路径/u);
 });
+
+test('记录范围：白名单只记陪伴目录、黑名单排除代码目录、未配置时全记', () => {
+  const sep = process.platform === 'win32' ? '\\' : '/';
+  const companion = `${sep === '\\' ? 'D:\\' : '/companion'}companion`;
+  const project = `${sep === '\\' ? 'D:\\' : '/work'}project`;
+  // 默认（未配置 companionDirs）→ 全记，保证装完即用。
+  assert.equal(plugin.shouldRecord(project, {}), true);
+  assert.equal(plugin.shouldRecord(undefined, {}), true);
+  // companion-only：命中记、不命中不记、拿不到 cwd 不记。
+  const allow = { recordScope: 'companion-only', companionDirs: [companion] };
+  assert.equal(plugin.shouldRecord(companion, allow), true);
+  assert.equal(plugin.shouldRecord(`${companion}${sep}chat`, allow), true);
+  assert.equal(plugin.shouldRecord(project, allow), false);
+  assert.equal(plugin.shouldRecord(undefined, allow), false);
+  // exclude：排除目录下不记，其他记。
+  const deny = { recordScope: 'exclude', excludeDirs: [project] };
+  assert.equal(plugin.shouldRecord(project, deny), false);
+  assert.equal(plugin.shouldRecord(`${project}${sep}src`, deny), false);
+  assert.equal(plugin.shouldRecord(companion, deny), true);
+  // all：全记。
+  assert.equal(plugin.shouldRecord(project, { recordScope: 'all' }), true);
+  // 相对路径的目录配置被忽略，不误伤。
+  assert.equal(plugin.shouldRecord(project, { recordScope: 'companion-only', companionDirs: ['relative'] }), true);
+});

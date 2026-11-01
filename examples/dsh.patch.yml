@@ -13,6 +13,17 @@
         idleMs: 120000
         # 保留宿主已有能力与权限；只开放核心工具时可改为true。
         memoryOnly: false
+        # 记录范围：只把"陪伴"会话写进她的人生，代码/工作会话不记成她的经历。
+        # companion-only（默认）：只记 companionDirs 下的会话；未填 companionDirs 时等同 all。
+        # exclude：记全部，但排除 excludeDirs 下的会话。all：全部记录。
+        # 命名/出生始终允许，不受此限。
+        recordScope: companion-only
+        # 填你的"陪伴目录"绝对路径，例如你和她说日常话的工作区：
+        # companionDirs:
+        #   - 'D:\你的陪伴工作区'
+        # 或反过来只排除项目代码目录：
+        # excludeDirs:
+        #   - 'D:\你的代码项目'
         # 空闲整理默认复用最近根会话的模型；前台记忆准备没有额外网络请求。
         reflect: true
         maxReflectionCallsPerDay: 12
