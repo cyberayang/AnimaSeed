@@ -127,6 +127,8 @@ try {
 
 需要直接管理档案时，可使用 `SoulCore`。可用类型与方法从 `@animaseed/core` 导出。
 
+完整的非 dsh 宿主接入示例见 [examples/host-bridge.ts](../examples/host-bridge.ts)（`npm run demo:bridge`），演示 open、receive、reply、record 与 recall 的一轮接续。
+
 ## dsh 参考适配
 
 验证基线：**dsh 0.2.1-rc.2**。dsh 以插件方式加载本核心，插件入口为 `@animaseed/core/dsh`。安装方式取决于你使用的 dsh 形态。

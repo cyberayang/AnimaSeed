@@ -20,6 +20,7 @@
     "check": "tsc --noEmit && npm run build && node scripts/check.mjs && node --test test/*.test.ts",
     "test": "npm run build && node --test test/*.test.ts",
     "demo": "node examples/continuity.ts",
+    "demo:bridge": "node examples/host-bridge.ts",
     "start": "node --disable-warning=ExperimentalWarning cli/main.ts start",
     "core": "node --disable-warning=ExperimentalWarning cli/main.ts"
   },

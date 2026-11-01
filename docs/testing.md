@@ -19,6 +19,12 @@ npm run check
 npm run demo
 ```
 
+查看非 dsh 宿主如何用 SDK 完成一轮接续（open/receive/reply/record/recall）：
+
+```sh
+npm run demo:bridge
+```
+
 示例和测试使用虚构档案，不调用收费模型。GitHub Actions 在 Windows 和 Linux 上运行相同检查，最新结果见[工作流页面](https://github.com/cyberayang/AnimaSeed/actions/workflows/check.yml)。
 
 ## 测试覆盖
