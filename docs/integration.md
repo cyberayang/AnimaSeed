@@ -147,7 +147,14 @@ dsh 插件安装器接受 **GitHub 仓库地址**、npm 包名或本地压缩包
 ### 配置
 
 1. 安装后，将 [dsh.patch.yml](../examples/dsh.patch.yml) 的 `insert` 段合并到目标 profile 的 `cordis.patch.yml`。
-2. 将 `dataDir` 改为本人生档案的绝对路径，重启该 profile。
+2. 重启该 profile。**`dataDir` 可省略**：默认档案落在 `$DSH_HOME/soul-data`（通常是 `~/.dsh/soul-data`），装完即可用，无需手写路径。
+
+需要把档案放到别处时，才在配置里填 `dataDir` 绝对路径：
+
+```yaml
+config:
+  dataDir: 'D:\your\path\data\soul'
+```
 
 `dataDir` 指向哪份档案，就是哪一个她。同一 `dataDir` 不要被多个进程同时写入。
 

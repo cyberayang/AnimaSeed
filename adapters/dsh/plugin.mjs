@@ -1,4 +1,5 @@
-import { isAbsolute } from 'node:path';
+import { isAbsolute, join } from 'node:path';
+import { homedir } from 'node:os';
 import z from '@deepseek-ai/schemastery';
 import { createUserMessage } from '@deepseek-ai/dsh-llm';
 import { SoulCore, SOUL_RULES, namingPhrase } from '../../dist/src/index.js';
@@ -8,7 +9,8 @@ import { registerSoulTools, SOUL_TOOLS } from './tools.mjs';
 export const name = 'soul-core';
 export const inject = ['agents', 'systemPrompt', 'tools', 'llm'];
 export const Config = z.object({
-  dataDir: z.string().required(),
+  // 可选：留空时自动落在 $DSH_HOME/soul-data，装完即可用。
+  dataDir: z.string(),
   maxContextChars: z.number().min(2000).max(32000),
   idleMs: z.number().min(1000).default(120000),
   memoryOnly: z.boolean().default(false),
@@ -16,12 +18,22 @@ export const Config = z.object({
   maxReflectionCallsPerDay: z.number().step(1).min(0).max(48).default(12),
   reflectionProvider: z.string(), reflectionModel: z.string(),
 });
+// 未显式配置 dataDir 时的默认档案目录：优先 $DSH_HOME，其次 ~/.dsh。
+export function resolveDataDir(configured) {
+  const explicit = (configured ?? '').trim();
+  if (explicit) {
+    if (!isAbsolute(explicit)) throw new Error('dataDir 必须是绝对路径；留空则使用默认档案目录');
+    return explicit;
+  }
+  const home = process.env.DSH_HOME?.trim() || join(homedir(), '.dsh');
+  return join(home, 'soul-data');
+}
 const visibleText = message => (message?.content ?? []).filter(x => x.type === 'text').map(x => x.text).join('\n');
 
 export function apply(ctx, config) {
-  if (!isAbsolute(config.dataDir)) throw new Error('dataDir必须是独立的绝对路径');
+  const dataDir = resolveDataDir(config.dataDir);
   if (!!config.reflectionProvider !== !!config.reflectionModel) throw new Error('整理模型需同时指定provider和model');
-  const core = new SoulCore({ dataDir: config.dataDir }), cache = new WeakMap();
+  const core = new SoulCore({ dataDir }), cache = new WeakMap();
   let closing = false, route;
   const rootOnly = agent => !!agent && ctx.agents.roots().includes(agent) && agent.session.header.origin !== 'subagent';
   const logger = ctx.logger('soul-core');

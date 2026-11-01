@@ -131,3 +131,19 @@ test('用户新输入取消后台任务，不提交取消的推断（旧基础�
   background.interrupt(); await running; await background.close();
   assert.equal(f.core.records().filter(x => x.kind !== 'episode').length, 0);
 });
+
+test('未配置 dataDir 时落到 $DSH_HOME/soul-data，装完即可用；显式相对路径拒绝', () => {
+  const previous = process.env.DSH_HOME;
+  process.env.DSH_HOME = 'C:\\fake-dsh-home';
+  try {
+    assert.equal(plugin.resolveDataDir(undefined), 'C:\\fake-dsh-home\\soul-data');
+    assert.equal(plugin.resolveDataDir(''), 'C:\\fake-dsh-home\\soul-data');
+    assert.equal(plugin.resolveDataDir('   '), 'C:\\fake-dsh-home\\soul-data');
+  } finally {
+    if (previous === undefined) delete process.env.DSH_HOME;
+    else process.env.DSH_HOME = previous;
+  }
+  const absolute = 'D:\\somewhere\\soul';
+  assert.equal(plugin.resolveDataDir(absolute), absolute);
+  assert.throws(() => plugin.resolveDataDir('relative/dir'), /绝对路径/u);
+});

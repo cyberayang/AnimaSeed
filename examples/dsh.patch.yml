@@ -5,8 +5,9 @@
     - id: soul-core
       name: '@animaseed/core/dsh'
       config:
-        # 改为你自己的绝对人生目录；示例路径不会自动替换。
-        dataDir: '/absolute/path/to/your/workspace/data/soul'
+        # dataDir 可省略：默认落在 $DSH_HOME/soul-data，装完即可用。
+        # 需要指定别处时再填一个绝对路径：
+        # dataDir: 'D:\your\path\data\soul'
         # 默认3000字符身份锚点，不自动全文检索；回忆由模型按需调用。
         # maxContextChars: 3000
         idleMs: 120000

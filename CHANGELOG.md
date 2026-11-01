@@ -7,6 +7,7 @@
 ### 新增
 
 - 支持直接从仓库安装为 dsh 插件：`package.json` 增加 `prepare` 脚本，pnpm 从 git 拉取后自动构建 `dist/`，无需先手动 `npm pack`。
+- dsh 插件的 `dataDir` 改为可选：未配置时自动落在 `$DSH_HOME/soul-data`，**装完即可用，无需手写配置**；填写时仍要求绝对路径。
 - 新增非 dsh 宿主接入示例 [`examples/host-bridge.ts`](examples/host-bridge.ts)（`npm run demo:bridge`），演示 open、receive、reply、record、recall 的一轮接续与跨进程身份保持。
 - README 增加「作为 dsh 插件安装」路径，指向接入文档。
 
