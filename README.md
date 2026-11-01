@@ -89,6 +89,16 @@ node dist/cli/main.js workspace-init
 
 之后的日常交流，继续使用同一份档案。初始化、命名与新对话接续的完整步骤见[使用指南](docs/getting-started.md)。
 
+### 作为 dsh 插件安装
+
+dsh 用户可以直接从仓库地址安装，让核心在每次对话中自动接续记忆：
+
+```sh
+dsh plugin --profile <profile名> add github:cyberayang/AnimaSeed
+```
+
+桌面版 dsh 在插件管理界面粘贴仓库地址即可。装好后按 [宿主接入](docs/integration.md) 配置 `dataDir`。其他智能体可通过 SDK 或工作区命令读取同一份档案。
+
 ## 继续了解
 
 | 你想了解 | 从这里开始 |
