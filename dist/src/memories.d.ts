@@ -1,0 +1,10 @@
+import type { Citation, DerivedInput, Memory, Observation, Status } from './types.ts';
+import { Store } from './store.ts';
+export declare function stableId(prefix: string, value: unknown): string;
+export declare function evidence(store: Store, citations: Citation[], userOnly?: boolean): Memory[];
+export declare function observe(store: Store, value: Observation, now: string): Memory;
+export declare function derive(store: Store, value: DerivedInput, now: string): Memory;
+export declare function invalidate(store: Store, roots: string[], status: Exclude<Status, 'active'>, now: string): string[];
+export declare function refresh(store: Store, now: string): string[];
+export declare function ancestors(store: Store, id: string): string[];
+export declare function forget(store: Store, id: string, now: string): string[];

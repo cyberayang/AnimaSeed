@@ -1,5 +1,5 @@
 node_modules/
-dist/
+# dist/ 已随仓库提供编译产物，安装时无需构建脚本（避免 pnpm allowBuilds 拦截）。
 data/
 .qa/
 *.sqlite*

@@ -1,0 +1,10 @@
+import { SoulRepository } from './soul-repository.ts';
+import type { LifeEntry } from './soul-types.ts';
+import type { IntentionInput, IntentionView, HostPermissionInput, HostExperienceInput } from './agency-types.ts';
+export declare function intentionInput(input: unknown): IntentionInput;
+export declare function intend(repo: SoulRepository, input: IntentionInput, now: string): LifeEntry;
+export declare function isExperience(row: LifeEntry): boolean;
+export declare function intentionView(repo: SoulRepository, intention: LifeEntry, now: string, epoch?: string): IntentionView;
+export declare function intentions(repo: SoulRepository, now: string, limit?: number): IntentionView[];
+export declare function hostPermission(repo: SoulRepository, input: HostPermissionInput, now: string, epoch?: string): LifeEntry;
+export declare function hostExperience(repo: SoulRepository, input: HostExperienceInput, now: string, epoch?: string): LifeEntry;

@@ -15,9 +15,8 @@
   "files": ["dist", "adapters", "README.md", "README.en.md", "docs", "examples/dsh.patch.yml"],
   "scripts": {
     "build": "tsc -p tsconfig.build.json",
-    "prepare": "tsc -p tsconfig.build.json",
     "prepack": "npm run build",
-    "check": "tsc --noEmit && npm run build && node scripts/check.mjs && node --test test/*.test.ts",
+    "check": "tsc --noEmit && npm run build && node scripts/check.mjs && node scripts/check-dist.mjs && node --test test/*.test.ts",
     "test": "npm run build && node --test test/*.test.ts",
     "demo": "node examples/continuity.ts",
     "demo:bridge": "node examples/host-bridge.ts",

@@ -1,0 +1,11 @@
+import type { Citation, DerivedInput, Identity, Memory, Trait } from './types.ts';
+export declare function object(value: unknown): Record<string, unknown>;
+export declare function text(value: unknown, label: string, max?: number): string;
+export declare function number(value: unknown, min: number, max: number, label?: string): number;
+export declare function date(value: unknown): string;
+export declare function list(value: unknown, max?: number): unknown[];
+export declare function citations(value: unknown): Citation[];
+export declare function derived(value: unknown): DerivedInput;
+export declare function trait(value: unknown): Trait;
+export declare function identity(value: unknown): Identity;
+export declare function memory(value: unknown): Memory;
