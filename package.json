@@ -9,6 +9,7 @@
   "type": "module",
   "private": true,
   "license": "MIT",
+  "main": "./dist/src/index.js",
   "engines": { "node": ">=24.14.0", "dsh": ">=0.2.1-rc.2" },
   "exports": { ".": { "types": "./dist/src/index.d.ts", "default": "./dist/src/index.js" }, "./dsh": "./adapters/dsh/plugin.mjs" },
   "bin": { "animaseed": "./dist/cli/main.js", "memory-core": "./dist/cli/main.js", "soul-core": "./dist/cli/main.js" },
