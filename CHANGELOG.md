@@ -6,7 +6,7 @@
 
 ### 新增
 
-- 支持直接从仓库安装为 dsh 插件：`package.json` 增加 `prepare` 脚本，pnpm 从 git 拉取后自动构建 `dist/`，无需先手动 `npm pack`。
+- 支持直接从仓库安装为 dsh 插件：仓库随源码提交编译好的 `dist/` 并设置 `main`，pnpm 从 git 安装时不执行构建脚本，无需 `allowBuilds` 放行，也不会先手动 `npm pack`。新增 `scripts/check-dist.mjs` 在 `npm run check` 中校验提交的产物与源码一致。
 - dsh 插件的 `dataDir` 改为可选：未配置时自动落在 `$DSH_HOME/soul-data`，**装完即可用，无需手写配置**；填写时仍要求绝对路径。
 - dsh 插件新增 `recordScope`（`companion-only` 默认 / `exclude` / `all`）与 `companionDirs`、`excludeDirs`：按会话工作目录决定哪些对话写进人生档案，让代码/工作会话不混入她的经历；命名与出生始终允许。未配置目录时等同 `all`，保持装完即用。
 - 新增 `workspace-scope` 命令：起名后可用一句话设定记录范围与陪伴目录，写入档案目录的 `scope.json`；dsh 插件与 CLI 都读取它，用户无需手改插件配置。

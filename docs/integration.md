@@ -135,14 +135,14 @@ try {
 
 ### 安装方式
 
-dsh 插件安装器接受 **GitHub 仓库地址**、npm 包名或本地压缩包。仓库已带 `prepare` 脚本，从 git 安装时会自动构建 `dist/`，无需先手动 `npm pack`。
+dsh 插件安装器接受 **GitHub 仓库地址**、npm 包名或本地压缩包。仓库已随源码提交编译好的 `dist/`，从 git 安装时无需执行构建脚本，也不需要在 `allowBuilds` 里放行。
 
 | dsh 形态 | 推荐方式 |
 | --- | --- |
 | 桌面应用 | 在插件管理界面粘贴仓库地址 `github:<你的用户名>/AnimaSeed`，或从 Releases 下载 `.tgz` 后选择本地文件 |
 | npm / 命令行版 | `dsh plugin --profile <profile名> add github:<你的用户名>/AnimaSeed` |
 
-从 git 安装等价于 pnpm 拉取仓库并执行 `prepare` 构建。npm 包发布形态（`@animaseed/core`）同样支持。
+从 git 安装等价于 pnpm 拉取仓库；仓库已包含编译产物，pnpm 不会在安装时执行构建脚本，因此无需在 `allowBuilds` 中放行。npm 包发布形态（`@animaseed/core`）同样支持。
 
 ### 配置
 
