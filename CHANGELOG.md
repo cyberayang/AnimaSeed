@@ -12,6 +12,7 @@
 - 新增 `workspace-scope` 命令：起名后可用一句话设定记录范围与陪伴目录，写入档案目录的 `scope.json`；dsh 插件与 CLI 都读取它，用户无需手改插件配置。
 - dsh 插件读取档案目录下的 `scope.json`，优先于插件内配置，起名后设定即生效。
 - 引导文档（`.soul/GUIDE.md` 与 AGENTS 段）加入“起名后的安家问答”：用有代入感的口吻询问“要把这里作为我们的家么”“只记家里还是都记下来”，再调用 `workspace-scope` 写入。
+- 接入文档说明：dsh 默认只热重载配置改动、不监控新装插件的代码模块，因此新装的服务端插件需重启一次完成首次加载；之后改配置热生效。这是 dsh 的通用行为。
 - 新增非 dsh 宿主接入示例 [`examples/host-bridge.ts`](examples/host-bridge.ts)（`npm run demo:bridge`），演示 open、receive、reply、record、recall 的一轮接续与跨进程身份保持。
 - README 增加「作为 dsh 插件安装」路径，指向接入文档。
 

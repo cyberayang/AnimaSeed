@@ -149,6 +149,8 @@ dsh 插件安装器接受 **GitHub 仓库地址**、npm 包名或本地压缩包
 1. 安装后，将 [dsh.patch.yml](../examples/dsh.patch.yml) 的 `insert` 段合并到目标 profile 的 `cordis.patch.yml`。
 2. 重启该 profile。**`dataDir` 可省略**：默认档案落在 `$DSH_HOME/soul-data`（通常是 `~/.dsh/soul-data`），装完即可用，无需手写路径。
 
+> **为何首次安装需要重启一次？** dsh 默认热重载 profile 的配置改动，但新安装的插件代码模块不在默认热加载范围（`dsh-hmr` 的 `root` 为空）；因此新装的服务端插件需要重启一次完成首次加载。这是 dsh 对新装插件的通用行为，不是本插件特有。重启一次后，后续修改配置（如 `recordScope`、`companionDirs`）会热生效，无需再次重启。
+
 需要把档案放到别处时，才在配置里填 `dataDir` 绝对路径：
 
 ```yaml
