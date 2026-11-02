@@ -3,7 +3,7 @@ import { homedir } from 'node:os';
 import z from '@deepseek-ai/schemastery';
 import { createUserMessage } from '@deepseek-ai/dsh-llm';
 import { SoulCore, SOUL_RULES, namingPhrase } from '../../dist/src/index.js';
-import { readScope } from '../../dist/src/scope.js';
+import { readScope, writeScope } from '../../dist/src/scope.js';
 import { Background, hostConsolidator } from './background.mjs';
 import { registerSoulTools, SOUL_TOOLS } from './tools.mjs';
 
@@ -140,6 +140,11 @@ export function apply(ctx, config) {
           const lifecycle = core.lifecycle(), name = namingPhrase(text);
           if (lifecycle.phase === 'awaiting-name' && name) {
             core.name({ name, namedBy: '抚养者', sessionId: String(session.id), messageId: event.data.id, text });
+            // 出生时把当前工作目录记作默认"家"：零配置，编码目录之外的陪伴更干净。
+            // 仅在尚未由用户设定 scope 时写入，用户显式配置优先。
+            try {
+              if (!fileScope && cwd) writeScope(dataDir, { scope: 'companion-only', companionDirs: [cwd] });
+            } catch { /* 记录出生目录失败不阻断命名 */ }
           } else if (lifecycle.phase === 'living' && recording) {
             core.observe({ sessionId: String(session.id), messageId: event.data.id, role: 'user', text });
           }
