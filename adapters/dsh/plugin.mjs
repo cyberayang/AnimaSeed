@@ -1,5 +1,6 @@
 import { isAbsolute, join, resolve as resolvePath, sep } from 'node:path';
 import { homedir } from 'node:os';
+import { appendFileSync } from 'node:fs';
 import z from '@deepseek-ai/schemastery';
 import { createUserMessage } from '@deepseek-ai/dsh-llm';
 import { SoulCore, SOUL_RULES, namingPhrase } from '../../dist/src/index.js';
@@ -126,10 +127,15 @@ export function apply(ctx, config) {
     if (rootOnly(agent)) route = { provider: request.provider, model: request.model };
     return request;
   });
+  const dbg = (msg) => { try { appendFileSync(join(dataDir, 'debug.log'), `[${new Date().toISOString()}] ${msg}\n`); } catch {} };
   ctx.on('session/event', (session, event) => {
     if (closing) return;
     const agent = ctx.agents.get(session.id);
-    if (!rootOnly(agent) || event.seq < session.inheritedEventCount) return;
+    const isRoot = rootOnly(agent), inherited = event.seq < session.inheritedEventCount;
+    if (event.type === 'user/message' || event.type === 'assistant/message') {
+      dbg(`event=${event.type} session=${session.id} rootOnly=${isRoot} inherited=${inherited} cwd=${session.header?.cwd} hasAgent=${!!agent}`);
+    }
+    if (!isRoot || inherited) return;
     try {
       // 命名/出生始终允许，不受记录范围限制，避免在代码目录里开的首次会话无法命名。
       const cwd = session.header.cwd;
@@ -155,7 +161,8 @@ export function apply(ctx, config) {
         if (text) core.observe({ sessionId: String(session.id), messageId: event.data.message.id, role: 'assistant', text });
       }
       if (event.type === 'turn/end' && event.data.reason.kind === 'completed' && recording) background.schedule();
-    } catch {
+    } catch (err) {
+      dbg(`ERROR event=${event.type} msg=${err instanceof Error ? err.stack || err.message : String(err)}`);
       logger.warn('人生记录未完成；对话可继续，请检查命名状态与数据目录。');
     }
   });
